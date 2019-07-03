@@ -4,4 +4,4 @@ __pycache__
 catalog/.idea/*
 catalog/catalog/__pycache__/*
 catalog/data/secret.key
-catalog/data/catalog.db
+catalog/data/*.db

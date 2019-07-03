@@ -17,7 +17,7 @@ from sqlalchemy.schema import ForeignKey
 
 
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler)
+logger.addHandler(logging.NullHandler())
 # log output is configured for the root logger in the startup script
 
 Base = declarative_base()
@@ -48,6 +48,15 @@ class Item(Base):
         nullable=False
     )
     # this ON DELETE CASCADE condition works with query().filter().delete()
+
+
+def _clean(text):
+    """Strip all HTML tags from a string.
+
+    :param text: string
+    :return: string without any tags
+    """
+    return bleach.clean(text, tags=[], strip=True)
 
 
 class DBManager:
@@ -98,9 +107,9 @@ class DBManager:
         """
         # noinspection PyBroadException
         try:
-            name = bleach.clean(name)
+            name = _clean(name)
             with self._get_session() as session:
-                new_category = Category(name=bleach.clean(name))
+                new_category = Category(name=name)
                 session.add(new_category)
                 session.flush()
                 new_id = new_category.id
@@ -121,19 +130,19 @@ class DBManager:
         """
         # noinspection PyBroadException
         try:
-            name = bleach.clean(name)
+            name = _clean(name)
             with self._get_session() as session:
                 category = session.query(Category).filter(
                     Category.id == id_
                 ).one()
-                old_name = bleach.clean(category.name)
+                old_name = _clean(category.name)
                 category.name = name
                 session.add(category)
         except BaseException:
             message = "Failed to edit a category."
             logger.exception(message)
             return message
-        return "Changed category '{}' name to '{}'.".format(old_name, name)
+        return "Changed name of category '{}' to '{}'.".format(old_name, name)
 
     def delete_category(self, id_):
         """Delete an existing category.
@@ -147,7 +156,7 @@ class DBManager:
                 category = session.query(Category).filter(
                     Category.id == id_
                 )
-                name = bleach.clean(category.one().name)
+                name = _clean(category.one().name)
                 category.delete()
         except BaseException:
             message = "Failed to delete a category."
@@ -170,7 +179,7 @@ class DBManager:
                 ).one()
                 result = {
                     "id": category.id,
-                    "name": bleach.clean(category.name)
+                    "name": _clean(category.name)
                 }
         except BaseException:
             logger.exception("Failed to retrieve a category.")
@@ -189,10 +198,10 @@ class DBManager:
                 categories = session.query(Category).order_by(
                     Category.name
                 ).all()
-            result = odict([
-                (category.id, bleach.clean(category.name))
-                for category in categories
-            ])
+                result = odict([
+                    (category.id, _clean(category.name))
+                    for category in categories
+                ])
         except BaseException:
             logger.exception("Failed to retrieve category list.")
             return odict()
@@ -209,8 +218,8 @@ class DBManager:
         """
         # noinspection PyBroadException
         try:
-            name = bleach.clean(name)
-            description = bleach.clean(description)
+            name = _clean(name)
+            description = _clean(description)
             with self._get_session() as session:
                 new_item = Item(
                     name=name,
@@ -237,11 +246,11 @@ class DBManager:
         """
         # noinspection PyBroadException
         try:
-            name = bleach.clean(name)
-            description = bleach.clean(description)
+            name = _clean(name)
+            description = _clean(description)
             with self._get_session() as session:
                 item = session.query(Item).filter(Item.id == id_).one()
-                old_name = bleach.clean(item.name)
+                old_name = _clean(item.name)
                 item.name = name
                 item.description = description
                 item.category_id = category_id
@@ -262,7 +271,7 @@ class DBManager:
         try:
             with self._get_session() as session:
                 item = session.query(Item).filter(Item.id == id_)
-                name = bleach.clean(item.one().name)
+                name = _clean(item.one().name)
                 item.delete()
         except BaseException:
             message = "Failed to delete an item."
@@ -283,8 +292,8 @@ class DBManager:
                 item = session.query(Item).filter(Item.id == id_).one()
                 result = {
                     "id": item.id,
-                    "name": bleach.clean(item.name),
-                    "description": bleach.clean(item.description),
+                    "name": _clean(item.name),
+                    "description": _clean(item.description),
                     "created": item.created,
                     "category_id": item.category_id
                 }
@@ -305,10 +314,10 @@ class DBManager:
         try:
             with self._get_session() as session:
                 items = session.query(Item).order_by(
-                    Item.created.desc()
+                    Item.created.desc(), Item.name
                 ).limit(num).all()
                 result = odict([
-                    (item.id, bleach.clean(item.name)) for item in items
+                    (item.id, _clean(item.name)) for item in items
                 ])
         except BaseException:
             logger.exception("Failed to retrieve latest items.")
@@ -330,7 +339,7 @@ class DBManager:
                     Item.category_id == category_id
                 ).order_by(Item.name).all()
             result = odict([
-                (item.id, bleach.clean(item.name)) for item in items
+                (item.id, _clean(item.name)) for item in items
             ])
         except BaseException:
             logger.exception("Failed to retrieve items by category.")
