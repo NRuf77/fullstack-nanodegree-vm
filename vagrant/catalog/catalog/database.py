@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Table definitions and database manager class.
+"""Table definitions and database manager class for catalog server.
 
 Written by Nikolaus Ruf
 """

@@ -1,0 +1,47 @@
+html {
+	margin: 0;
+	box-sizing: border-box;
+}
+
+*, *:before, *:after {
+	box-sizing: inherit;
+}
+
+body {
+	margin: 0;
+}
+
+.centered {
+	width: 1000px;
+	margin: 0 auto;
+	background-color: red;
+}
+
+.header {
+	height: 80px;
+	width: 100%;
+	margin: 0;
+	background-color: blue;
+	display: flex;
+    align-items: center;
+	padding-left: 20px;
+}
+
+.horizontal {
+	width: 100%;
+	margin: 0;
+	display: flex;
+}
+
+.menu {
+	width: 20%;
+	margin: 0;
+	background-color: green;
+}
+
+.display {
+	min-height: 500px;
+	width: 40%;
+	margin: 0;
+	background-color: yellow;
+}
