@@ -1,4 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Create an empty sqlite database.
+
+This script needs to be called from the main project directory as
+scripts/db_setup.py since relative paths are defined from there.
 
 Written by Nikolaus Ruf
 """

@@ -306,18 +306,31 @@ class DBManager:
         """Retrieve the names of items which were added last.
 
         :param num: integer, number of items to retrieve
-        :return: ordered dict with item IDs as keys and item names as values
-            in order of creation timestamp if the query was successful, an
-            empty ordered dict if not
+        :return: ordered dict; keys are item IDs and values are dicts with
+            fields:
+            - name: string; item name
+            - category_id: integer; category ID
+            - category_name: string; category name
+            elements are provided in order of creation timestamp with ties
+            broken in lexicographical order of item names; if the query fails,
+            it returns an empty ordered dict, same as if there are no records
         """
         # noinspection PyBroadException
         try:
             with self._get_session() as session:
-                items = session.query(Item).order_by(
+                items = session.query(Item, Category).join(
+                    Category
+                ).order_by(
                     Item.created.desc(), Item.name
                 ).limit(num).all()
                 result = odict([
-                    (item.id, _clean(item.name)) for item in items
+                    (item[0].id, {
+                        "name": item[0].name,
+                        "category_id": item[1].id,
+                        "category_name": item[1].name
+
+                    })
+                    for item in items
                 ])
         except BaseException:
             logger.exception("Failed to retrieve latest items.")
@@ -338,9 +351,9 @@ class DBManager:
                 items = session.query(Item).filter(
                     Item.category_id == category_id
                 ).order_by(Item.name).all()
-            result = odict([
-                (item.id, _clean(item.name)) for item in items
-            ])
+                result = odict([
+                    (item.id, _clean(item.name)) for item in items
+                ])
         except BaseException:
             logger.exception("Failed to retrieve items by category.")
             return odict()

@@ -1,4 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Integration test for the database manager.
+
+This script needs to be called from the main project directory as
+scripts/db_test.py since relative paths are defined from there.
 
 Written by Nikolaus Ruf
 """
@@ -79,7 +84,7 @@ categories = db_manager.get_category_list()
 assert(categories == odict([(id_1, "Blue things"), (id_3, "Green things")]))
 
 
-print("Test deleting categories")
+print("* Test deleting categories")
 message = db_manager.delete_category(id_1)
 assert(message == "Deleted category 'Blue things'.")
 
@@ -95,7 +100,7 @@ categories = db_manager.get_category_list()
 assert(categories == odict([(id_3, "Green things")]))
 
 
-print("Test adding items")
+print("* Test adding items")
 items = db_manager.get_latest_items(10)
 assert(items == odict())
 
@@ -145,8 +150,111 @@ assert(item["id"] == id_7)
 assert(item["name"] == "Caterpillar")
 
 items = db_manager.get_latest_items(10)
-assert(items == odict([(id_7, "Caterpillar"), (id_4, "Leaf")]))
+assert(items == odict([
+    (id_7, {
+        "name": "Caterpillar",
+        "category_id": id_3,
+        "category_name": "Green things"
+    }), (id_4, {
+        "name": "Leaf",
+        "category_id": id_3,
+        "category_name": "Green things"
+    })
+]))
 # latest record first
 
 
-print("Test editing items")
+print("* Test editing items")
+message = db_manager.edit_item(
+    id_4, "Oak leaf", "A leaf from an oak tree.", id_3
+)
+assert(message == "Edited item 'Oak leaf' (formerly 'Leaf').")
+
+item = db_manager.get_item(id_4)
+assert(
+        sorted(list(item.keys())) ==
+        ["category_id", "created", "description", "id", "name"]
+)
+assert(item["category_id"] == id_3)
+assert(type(item["created"] == datetime))
+assert(item["description"] == "A leaf from an oak tree.")
+assert(item["id"] == id_4)
+assert(item["name"] == "Oak leaf")
+
+message = db_manager.edit_item(
+    id_4 + id_7 + 1, "Oak leaf", "A leaf from an oak tree.", id_3
+)  # this logs an exception, item ID does not exist
+assert(message == "Failed to edit an item.")
+
+message = db_manager.edit_item(
+    id_4, "Oak leaf", "A leaf from an oak tree.", id_3 + 1
+)  # this logs an exception, category ID does not exist
+assert(message == "Failed to edit an item.")
+
+message = db_manager.edit_item(
+    id_4, "<h2>Beech leaf</h2>", "A leaf from a <strong>beech tree</strong>.",
+    id_3
+)
+assert(message == "Edited item 'Beech leaf' (formerly 'Oak leaf').")
+
+item = db_manager.get_item(id_4)
+assert(
+        sorted(list(item.keys())) ==
+        ["category_id", "created", "description", "id", "name"]
+)
+assert(item["category_id"] == id_3)
+assert(type(item["created"] == datetime))
+assert(item["description"] == "A leaf from a beech tree.")
+assert(item["id"] == id_4)
+assert(item["name"] == "Beech leaf")
+
+items = db_manager.get_latest_items(10)
+assert(items == odict([
+    (id_7, {
+        "name": "Caterpillar",
+        "category_id": id_3,
+        "category_name": "Green things"
+    }), (id_4, {
+        "name": "Beech leaf",
+        "category_id": id_3,
+        "category_name": "Green things"
+    })
+]))
+
+
+print("* Test deleting items")
+message = db_manager.delete_item(id_4)
+assert(message == "Deleted item 'Beech leaf'.")
+
+item = db_manager.get_item(id_4)
+assert(item is None)
+
+message = db_manager.delete_item(id_4)
+assert(message == "Failed to delete an item.")
+
+items = db_manager.get_latest_items(10)
+assert(items == odict([
+    (id_7, {
+        "name": "Caterpillar",
+        "category_id": id_3,
+        "category_name": "Green things"
+    })
+]))
+
+
+print("* Test getting items by category")
+items = db_manager.get_category_items(id_3)
+assert(items == odict([(id_7, "Caterpillar")]))
+
+items = db_manager.get_category_items(id_3 + 1)
+assert(items == odict())
+
+
+print("* Delete test database")
+try:
+    os.remove(db_file)
+except OSError:
+    pass
+
+
+print("* Done")
