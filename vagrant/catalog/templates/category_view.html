@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block menu %}
+	<div class="button_box">
+		<a href="/" class="link_button">Main page</a>
+	</div>
+	{% if is_logged_in %}
+		<div class="placeholder"></div>
+		<div class="button_box">
+			<a href="{{ '/category/edit/%i/'%category['id'] }}" class="link_button">Edit category</a>
+		</div>
+		<div class="button_box">
+			<a href="{{ '/category/delete/%i/'%category['id'] }}" class="link_button">Delete category</a>
+		</div>
+		<div class="placeholder"></div>
+		<div class="button_box">
+			<a href="{{ '/item/add/%i/'%category['id'] }}" class="link_button">Add item</a>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block left_display %}
+	<h1>{{ category['name'] }}</h1>
+	<h2>Items</h2>
+	{% if items %}
+		<ul>
+			{% for key, value in items.items() %}
+				<li class="catalog_item">
+					<a href="{{ '/item/view/%i'%key }}" class="item_link">{{ value }}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p class="dummy">No items defined yet</p>
+	{% endif %}
+{% endblock %}

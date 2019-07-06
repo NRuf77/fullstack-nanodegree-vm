@@ -1,6 +1,6 @@
-__pycache__
-*.pyc
 .vagrant
+catalog/*.log
 catalog/.idea/*
+catalog/catalog/*.pyc
 catalog/catalog/__pycache__/*
 catalog/data/*.db

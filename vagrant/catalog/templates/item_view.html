@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block menu %}
+	<div class="button_box">
+		<a href="/" class="link_button">Main page</a>
+	</div>
+	{% if is_logged_in %}
+		<div class="placeholder"></div>
+		<div class="button_box">
+			<a href="{{ '/item/edit/%i/'%item['id'] }}" class="link_button">Edit item</a>
+		</div>
+		<div class="button_box">
+			<a href="{{ '/item/edit/%i/'%item['id'] }}" class="link_button">Delete item</a>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block left_display %}
+	<h1>{{ item['name'] }}</h1>
+	<h2>Category</h2>
+	<ul>
+		<li class="catalog_item">
+			<a href="{{ '/category/view/%i'%category['id'] }}" class="item_link">{{ category['name'] }}</a>
+		</li>
+	</ul>
+	<h2>Description</h2>
+	<p class="catalog_item">{{ item['description'] }}</p>
+{% endblock %}

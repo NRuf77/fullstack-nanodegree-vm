@@ -12,6 +12,10 @@ body {
 	font-family: Sans-Serif;
 }
 
+h1 {
+	font-size: 30px;
+}
+
 .centered {
 	width: 1000px;
 	margin: 0 auto;
@@ -72,16 +76,17 @@ body {
 	padding-right: 15px;
 }
 
-.link_button {
+.link_button, .submit_button {
 	display:inline-block;
 	height: 30px;
-	width: 120px;
+	width: 170px;
 	margin: 0;
 	border-style: solid;
 	border-width: 2px;
 	border-color: #607c8e;
 	background-color: #c5c9c7;
 	text-decoration: none;
+	font-size: 14px;
 	font-weight: bold;
 	color: #000000;
 	text-align: center;
@@ -101,17 +106,20 @@ body {
 }
 
 .menu {
-	width: 15%;
+	width: 20%;
 	margin: 0;
+	padding-left: 15px;
 }
 .placeholder {
-	height: 80px;
+	height: 15px;
 }
 
 .display {
 	min-height: 500px;
-	width: 35%;
+	width: 40%;
 	margin: 0;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 .button_box {
@@ -133,11 +141,23 @@ body {
 	color: #59656d;
 }
 
-.catalog_list_item {
-	line-height:24px;
+.catalog_item {
+	font-size: 20px;
+	line-height: 30px;
 }
 
 .dummy {
 	font-weight: bold;
 	color: #9f2305;
+}
+
+.input_field {
+	width: 100%;
+	font-size: 20px;
+	line-height: 30px;
+}
+
+.footnote {
+	font-size: 12px;
+	font-weight: bold;
 }
