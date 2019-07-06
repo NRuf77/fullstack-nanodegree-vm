@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block left_menu %}
+	{% if is_logged_in %}
+		<div class="button_box">
+			<a href="/category/add/" class="link_button">Add category</a>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block right_menu %}
+	{% if is_logged_in %}
+		<div class="button_box">
+			<a href="/item/add/" class="link_button">Add item</a>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block left_display %}
+	<h1>Categories</h1>
+	{% if categories %}
+		<ul>
+			{% for key, value in categories.items() %}
+				<li class="catalog_list_item">
+					<a href="{{'/category/view/%i'%key}}" class="item_link">{{ value }}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p class="dummy">No categories defined yet</p>
+	{% endif %}
+{% endblock %}
+{% block right_display %}
+	<h1>Latest items</h1>
+	{% if items %}
+		<ul>
+			{% for key, value in items.items() %}
+				<li class="catalog_list_item">
+					<a href="{{'/item/view/%i'%key}}" class="item_link">{{ value['name'] }}</a>
+					<a href="{{'/category/view/%i'%value['category_id']}}" class="item_link_gray">({{ value['category_name'] }})</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p class="dummy">No items defined yet</p>
+	{% endif %}
+{% endblock %}

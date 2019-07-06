@@ -9,22 +9,17 @@ html {
 
 body {
 	margin: 0;
+	font-family: Sans-Serif;
 }
 
 .centered {
 	width: 1000px;
 	margin: 0 auto;
-	background-color: red;
 }
 
 .header {
-	height: 80px;
 	width: 100%;
 	margin: 0;
-	background-color: blue;
-	display: flex;
-    align-items: center;
-	padding-left: 20px;
 }
 
 .horizontal {
@@ -33,15 +28,116 @@ body {
 	display: flex;
 }
 
-.menu {
-	width: 20%;
+.title {
+	height: 80px;
+	width: 75%;
 	margin: 0;
-	background-color: green;
+	background-color: #3e82fc;
+	text-decoration: none;
+	font-size: 36px;
+	font-weight: bold;
+	color: #000000;
+	text-align: left;
+	line-height: 80px;
+	vertical-align: middle;
+	padding-left: 15px;
+}
+
+.login_box {
+	width: 25%;
+	margin: 0;
+}
+
+.login_info {
+	height: 40px;
+	width: 100%;
+	margin: 0;
+	background-color: #3e82fc;
+	font-size: 12px;
+	font-weight: bold;
+	color: #ffffff;
+	text-align: right;
+	line-height: 40px;
+	vertical-align: middle;
+	padding-right: 15px;
+}
+
+.login_button_box {
+	height: 40px;
+	width: 100%;
+	margin: 0;
+	background-color: #3e82fc;
+	text-align: right;
+	padding-top: 5px;
+	padding-right: 15px;
+}
+
+.link_button {
+	display:inline-block;
+	height: 30px;
+	width: 120px;
+	margin: 0;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #607c8e;
+	background-color: #c5c9c7;
+	text-decoration: none;
+	font-weight: bold;
+	color: #000000;
+	text-align: center;
+	line-height: 26px;
+	vertical-align: middle;
+}
+
+.message_bar {
+	height: 40px;
+	width: 100%;
+	margin: 0;
+	background-color: #d0fefe;
+	align-items: center;
+	line-height: 40px;
+	vertical-align: middle;
+	padding-left: 15px;
+}
+
+.menu {
+	width: 15%;
+	margin: 0;
+}
+.placeholder {
+	height: 80px;
 }
 
 .display {
 	min-height: 500px;
-	width: 40%;
+	width: 35%;
 	margin: 0;
-	background-color: yellow;
+}
+
+.button_box {
+	height: 40px;
+	width: 100%;
+	margin: 0;
+	text-align: right;
+	padding-top: 5px;
+	padding-right: 15px;
+}
+
+.item_link {
+	text-decoration: none;
+	color: #000000;
+}
+
+.item_link_gray {
+	text-decoration: none;
+	color: #59656d;
+}
+
+.catalog_list_item {
+	line-height:24px;
+}
+
+.dummy {
+	font-weight: bold;
+	color: #9f2305;
 }

@@ -4,7 +4,7 @@
 Written by Nikolaus Ruf
 """
 
-from flask import Flask, render_template
+from flask import Flask
 
 
 app = Flask(
@@ -12,6 +12,12 @@ app = Flask(
 )  # HTML and style files are outside the Python module
 
 
-@app.route("/", methods=["GET", "POST"])
-def main_page():
-    return render_template("base.html")
+@app.route("/")
+def view_only():
+    """
+
+    :return:
+    """
+    return app.config["content"].get_main_page(
+        is_logged_in=True, user_name="Niko"
+    )

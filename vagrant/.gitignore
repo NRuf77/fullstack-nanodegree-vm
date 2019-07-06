@@ -3,5 +3,4 @@ __pycache__
 .vagrant
 catalog/.idea/*
 catalog/catalog/__pycache__/*
-catalog/data/secret.key
 catalog/data/*.db
