@@ -20,7 +20,7 @@ user_name = "Niko"
 
 app = Flask(
     __name__, static_folder="../static", template_folder="../templates"
-)  # HTML and style files are outside the Python module
+)  # HTML and style files are outside the Python module directory
 
 
 @app.route("/")
@@ -38,7 +38,7 @@ def serve_main_page():
 def serve_category_page(id_):
     """Serve page for one category.
 
-    :return: HTML code for page
+    :return: HTML code for page or redirect URL
     """
     page = app.config["content"].render_category_page(
         is_logged_in=is_logged_in, user_name=user_name, id_=id_

@@ -55,6 +55,10 @@ id_2, message = db_manager.add_category("Big things")
 assert(id_2 is None)
 assert(message == "Failed to add a category.")
 
+id_2, message = db_manager.add_category("")
+assert(id_2 is None)
+assert(message == "Invalid category name.")
+
 id_3, message = db_manager.add_category("<strong>Small things</strong>")
 assert(id_3 is not None)
 assert(message == "Added new category 'Small things'.")
@@ -76,6 +80,9 @@ assert(category == {"id": id_1, "name": "Blue things"})
 message = db_manager.edit_category(id_1 + id_3 + 1, "Red things")
 # this logs an exception, ID does not exist
 assert(message == "Failed to edit a category.")
+
+message = db_manager.edit_category(id_1, "")
+assert(message == "Invalid category name.")
 
 message = db_manager.edit_category(id_3, "<strong>Green things</strong>")
 assert(message == "Changed name of category 'Small things' to 'Green things'.")
@@ -123,6 +130,10 @@ id_5, message = db_manager.add_item("Leaf", "A leaf from a tree.", id_3)
 # this logs an exception, name already exists
 assert(id_5 is None)
 assert(message == "Failed to add an item.")
+
+id_5, message = db_manager.add_item("", "A leaf from a tree.", id_3)
+assert(id_5 is None)
+assert(message == "Invalid item name.")
 
 id_6, message = db_manager.add_item(
     "Caterpillar", "A hungry caterpillar.", id_3 + 1
@@ -185,6 +196,11 @@ message = db_manager.edit_item(
     id_4 + id_7 + 1, "Oak leaf", "A leaf from an oak tree.", id_3
 )  # this logs an exception, item ID does not exist
 assert(message == "Failed to edit an item.")
+
+message = db_manager.edit_item(
+    id_4, "", "A leaf from an oak tree.", id_3
+)
+assert(message == "Invalid item name.")
 
 message = db_manager.edit_item(
     id_4, "Oak leaf", "A leaf from an oak tree.", id_3 + 1

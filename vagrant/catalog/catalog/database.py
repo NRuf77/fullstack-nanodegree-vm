@@ -101,13 +101,15 @@ class DBManager:
     def add_category(self, name):
         """Add a new category.
 
-        :param name: string; name of the category
+        :param name: string; name of the category; must not be empty
         :return: integer ID of the new category if the query was successful,
             None if it was not; flash message string
         """
         # noinspection PyBroadException
         try:
             name = _clean(name)
+            if name == "":
+                return None, "Invalid category name."
             with self._get_session() as session:
                 new_category = Category(name=name)
                 session.add(new_category)
@@ -125,12 +127,14 @@ class DBManager:
         """Change an existing category.
 
         :param id_: integer; category ID
-        :param name: string; new category name
+        :param name: string; new category name; must not be empty
         :return: flash message string
         """
         # noinspection PyBroadException
         try:
             name = _clean(name)
+            if name == "":
+                return "Invalid category name."
             with self._get_session() as session:
                 category = session.query(Category).filter(
                     Category.id == id_
@@ -210,7 +214,7 @@ class DBManager:
     def add_item(self, name, description, category_id):
         """Add a new item.
 
-        :param name: string; item name
+        :param name: string; item name; must not be empty
         :param description: string; item description
         :param category_id: integer; associated category ID
         :return: integer ID of the new item if the query was successful, None
@@ -219,6 +223,8 @@ class DBManager:
         # noinspection PyBroadException
         try:
             name = _clean(name)
+            if name == "":
+                return None, "Invalid item name."
             description = _clean(description)
             with self._get_session() as session:
                 new_item = Item(
@@ -239,7 +245,7 @@ class DBManager:
         """Edit an existing item.
 
         :param id_: integer; item ID
-        :param name: string; item name
+        :param name: string; item name; must not be empty
         :param description: string; item description
         :param category_id: integer; associated category ID
         :return: flash message string
@@ -247,6 +253,8 @@ class DBManager:
         # noinspection PyBroadException
         try:
             name = _clean(name)
+            if name == "":
+                return "Invalid item name."
             description = _clean(description)
             with self._get_session() as session:
                 item = session.query(Item).filter(Item.id == id_).one()

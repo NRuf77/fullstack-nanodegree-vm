@@ -31,14 +31,12 @@ class ContentManager:
         :param user_name: string; user name
         :return: HTML page
         """
-        categories = self._db_manager.get_category_list()
-        items = self._db_manager.get_latest_items(10)
         return render_template(
             "main.html",
             is_logged_in=is_logged_in,
             user_name=user_name,
-            categories=categories,
-            items=items
+            categories=self._db_manager.get_category_list(),
+            items=self._db_manager.get_latest_items(10)
         )
 
     def render_category_page(self, is_logged_in, user_name, id_):
@@ -78,12 +76,9 @@ class ContentManager:
     def add_category(self, name):
         """Add a new category.
 
-        :param name: string; desired category name; must not be empty
+        :param name: string; desired category name
         :return: integer ID of new category or None to indicate a failure
         """
-        if name == "":
-            flash("Invalid category name.")
-            return
         id_, message = self._db_manager.add_category(name)
         flash(message)
         return id_
@@ -113,9 +108,6 @@ class ContentManager:
         :param name: string; desired category name; must not be empty
         :return: no return value
         """
-        if name == "":
-            flash("Invalid category name.")
-            return
         flash(self._db_manager.edit_category(id_=id_, name=name))
 
     def render_delete_category_page(self, user_name, id_):
@@ -193,7 +185,7 @@ class ContentManager:
     def add_item(self, name, description, id_):
         """Add a new item.
 
-        :param name: string; item name; must not be empty
+        :param name: string; item name
         :param description: string; item description
         :param id_: integer; category ID associated with item
         :return: integer item ID or None to indicate failure
@@ -209,7 +201,8 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; item ID
-        :return: HTML page or None if something went wrong
+        :return: HTML page or None if something went wrong; flash message
+            generated
         """
         categories = self._db_manager.get_category_list()
         if len(categories) == 0:
@@ -232,16 +225,15 @@ class ContentManager:
         """Edit an existing item.
 
         :param id_: integer; item ID
-        :param name: string; item name; must not be empty
+        :param name: string; item name
         :param description: string; item description
         :param category_id: integer; category ID associated with item
-        :return: no return value
+        :return: no return value; flash message generated
         """
-        if name == "":
-            flash("Invalid item name.")
-            return
         flash(self._db_manager.edit_item(
-            id_=id_, name=name, description=description,
+            id_=id_,
+            name=name,
+            description=description,
             category_id=category_id
         ))
 
@@ -250,7 +242,8 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; item ID
-        :return: HTML page or None if something went wrong
+        :return: HTML page or None if something went wrong; flash message
+            generated
         """
         item = self._db_manager.get_item(id_)
         if item is None:
@@ -273,6 +266,6 @@ class ContentManager:
         """Delete an existing item.
 
         :param id_: integer; item ID
-        :return: no return value
+        :return: no return value; flash message generated
         """
         flash(self._db_manager.delete_item(id_))
