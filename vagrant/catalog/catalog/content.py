@@ -201,8 +201,7 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; item ID
-        :return: HTML page or None if something went wrong; flash message
-            generated
+        :return: HTML page or None if something went wrong
         """
         categories = self._db_manager.get_category_list()
         if len(categories) == 0:
@@ -228,7 +227,7 @@ class ContentManager:
         :param name: string; item name
         :param description: string; item description
         :param category_id: integer; category ID associated with item
-        :return: no return value; flash message generated
+        :return: no return value
         """
         flash(self._db_manager.edit_item(
             id_=id_,
@@ -242,8 +241,7 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; item ID
-        :return: HTML page or None if something went wrong; flash message
-            generated
+        :return: HTML page or None if something went wrong
         """
         item = self._db_manager.get_item(id_)
         if item is None:
@@ -266,6 +264,6 @@ class ContentManager:
         """Delete an existing item.
 
         :param id_: integer; item ID
-        :return: no return value; flash message generated
+        :return: no return value
         """
         flash(self._db_manager.delete_item(id_))
