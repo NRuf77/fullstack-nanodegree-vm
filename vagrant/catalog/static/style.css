@@ -103,7 +103,8 @@ h2 {
 	width: 100%;
 	margin: 0;
 	background-color: #d0fefe;
-	align-items: center;
+	font-size: 12px;
+	color: #000000;
 	line-height: 40px;
 	vertical-align: middle;
 	padding-left: 15px;

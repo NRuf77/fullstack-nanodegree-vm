@@ -4,6 +4,9 @@
 		<a href="/" class="link_button">Main page</a>
 	</div>
 	<div class="button_box">
+		<a href="{{ '/category/view/%i'%item['category_id'] }}" class="link_button">Category page</a>
+	</div>
+	<div class="button_box">
 		<a href="{{ '/item/view/%i'%item['id'] }}" class="link_button">Item page</a>
 	</div>
 {% endblock %}
