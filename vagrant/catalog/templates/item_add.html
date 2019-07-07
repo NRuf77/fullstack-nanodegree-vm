@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block menu %}
+	<div class="button_box">
+		<a href="/" class="link_button">Main page</a>
+	</div>
+	{% if category_id > -1 %}
+		<div class="button_box">
+			<a href="{{ '/category/view/%i'%category_id }}" class="link_button">Category page</a>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block left_display %}
+	<h1>Item</h1>
+	<form action="/item/add/" method="post">
+		<h2>Category</h2>
+		<select class="input_field" name="category">
+			{% for key, value in categories.items() %}
+				<option value="{{ key }}" {% if key == category_id%} selected="selected" {% endif %}>{{ value }}</option>
+			{% endfor %}
+		</select>
+		<div class="spacer"></div>
+		<h2>Name</h2>
+		<input class="input_field" type="text" required name="name" placeholder="New item">
+		<div class="spacer"></div>
+		<h2>Description</h2>
+		<input class="input_field" type="text" name="description" placeholder="Description">
+		<div class="spacer"></div>
+		<button class="submit_button" type="submit" name="button" value="submit">Add item</button>
+	</form>
+{% endblock %}

@@ -4,14 +4,14 @@
 		<a href="/" class="link_button">Main page</a>
 	</div>
 	{% if is_logged_in %}
-		<div class="placeholder"></div>
+		<div class="spacer"></div>
 		<div class="button_box">
 			<a href="{{ '/category/edit/%i/'%category['id'] }}" class="link_button">Edit category</a>
 		</div>
 		<div class="button_box">
 			<a href="{{ '/category/delete/%i/'%category['id'] }}" class="link_button">Delete category</a>
 		</div>
-		<div class="placeholder"></div>
+		<div class="spacer"></div>
 		<div class="button_box">
 			<a href="{{ '/item/add/%i/'%category['id'] }}" class="link_button">Add item</a>
 		</div>

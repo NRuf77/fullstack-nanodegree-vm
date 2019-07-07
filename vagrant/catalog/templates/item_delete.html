@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block menu %}
+	<div class="button_box">
+		<a href="/" class="link_button">Main page</a>
+	</div>
+	<div class="button_box">
+		<a href="{{ '/item/view/%i'%item['id'] }}" class="link_button">Item page</a>
+	</div>
+{% endblock %}
+{% block left_display %}
+	<h1>Item</h1>
+	<form action="{{ '/item/delete/%i/'%item['id'] }}"% method="post">
+		<h2>Category</h2>
+		<input class="input_field" type="text" disabled name="name" value="{{ category }}">
+		<div class="spacer"></div>
+		<h2>Name</h2>
+		<input class="input_field" type="text" disabled name="name" value="{{ item['name'] }}">
+		<div class="spacer"></div>
+		<h2>Description</h2>
+		<input class="input_field" type="text" disabled name="description" value="{{ item['description'] }}">
+		<div class="spacer"></div>
+		<button class="submit_button" type="submit" name="button" value="submit">Delete item</button>
+	</form>
+{% endblock %}

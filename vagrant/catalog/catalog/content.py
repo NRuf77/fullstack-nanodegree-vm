@@ -47,7 +47,7 @@ class ContentManager:
         :param is_logged_in: boolean flag; whether the user is logged in
         :param user_name: string; user name
         :param id_: integer; category ID
-        :return: HTML page
+        :return: HTML page or None if something went wrong
         """
         category = self._db_manager.get_category(id_)
         if category is None:
@@ -93,7 +93,7 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; category ID
-        :return: HTML page
+        :return: HTML page or None if something went wrong
         """
         category = self._db_manager.get_category(id_)
         if category is None:
@@ -123,7 +123,7 @@ class ContentManager:
 
         :param user_name: string; user name
         :param id_: integer; category ID
-        :return: HTML page
+        :return: HTML page or None if something went wrong
         """
         category = self._db_manager.get_category(id_)
         if category is None:
@@ -150,7 +150,7 @@ class ContentManager:
         :param is_logged_in: boolean flag; whether the user is logged in
         :param user_name: string; user name
         :param id_: integer; item ID
-        :return: HTML page
+        :return: HTML page or None if something went wrong
         """
         item = self._db_manager.get_item(id_)
         if item is None:
@@ -158,6 +158,7 @@ class ContentManager:
             return
         category = self._db_manager.get_category(item["category_id"])
         if category is None:
+            # this should not happen unless there is a concurrent delete
             flash("Sorry, something went wrong.")
             return
         return render_template(
@@ -167,3 +168,111 @@ class ContentManager:
             category=category,
             item=item
         )
+
+    def render_add_item_page(self, user_name, id_):
+        """Render add item page template.
+
+        :param user_name: string; user name
+        :param id_: integer; category ID proposed for item, if invalid, the
+            select box will initialize to the default value
+        :return: HTML page or None if something went wrong
+        """
+        categories = self._db_manager.get_category_list()
+        if len(categories) == 0:
+            # this should not happen unless there is a concurrent delete
+            flash("Sorry, something went wrong.")
+            return
+        return render_template(
+            "item_add.html",
+            is_logged_in=True,
+            user_name=user_name,
+            category_id=id_,
+            categories=categories
+        )
+
+    def add_item(self, name, description, id_):
+        """Add a new item.
+
+        :param name: string; item name; must not be empty
+        :param description: string; item description
+        :param id_: integer; category ID associated with item
+        :return: integer item ID or None to indicate failure
+        """
+        id_, message = self._db_manager.add_item(
+            name=name, description=description, category_id=id_
+        )
+        flash(message)
+        return id_
+
+    def render_edit_item_page(self, user_name, id_):
+        """Render edit item page template.
+
+        :param user_name: string; user name
+        :param id_: integer; item ID
+        :return: HTML page or None if something went wrong
+        """
+        categories = self._db_manager.get_category_list()
+        if len(categories) == 0:
+            # this should not happen unless there is a concurrent delete
+            flash("Sorry, something went wrong.")
+            return
+        item = self._db_manager.get_item(id_)
+        if item is None:
+            flash("Invalid item.")
+            return
+        return render_template(
+            "item_edit.html",
+            is_logged_in=True,
+            user_name=user_name,
+            categories=categories,
+            item=item
+        )
+
+    def edit_item(self, id_, name, description, category_id):
+        """Edit an existing item.
+
+        :param id_: integer; item ID
+        :param name: string; item name; must not be empty
+        :param description: string; item description
+        :param category_id: integer; category ID associated with item
+        :return: no return value
+        """
+        if name == "":
+            flash("Invalid item name.")
+            return
+        flash(self._db_manager.edit_item(
+            id_=id_, name=name, description=description,
+            category_id=category_id
+        ))
+
+    def render_delete_item_page(self, user_name, id_):
+        """Render delete item page template.
+
+        :param user_name: string; user name
+        :param id_: integer; item ID
+        :return: HTML page or None if something went wrong
+        """
+        item = self._db_manager.get_item(id_)
+        if item is None:
+            flash("Invalid item.")
+            return
+        category = self._db_manager.get_category(item["category_id"])
+        if category is None:
+            # this should not happen unless there is a concurrent delete
+            flash("Sorry, something went wrong.")
+            return
+        return render_template(
+            "item_delete.html",
+            is_logged_in=True,
+            user_name=user_name,
+            category=category["name"],
+            item=item
+        )
+
+    def delete_item(self, id_):
+        """Delete an existing item.
+
+        :param id_: integer; item ID
+        :return: no return value
+        """
+        flash(self._db_manager.delete_item(id_))

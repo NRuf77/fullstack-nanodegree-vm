@@ -6,10 +6,10 @@
 {% endblock %}
 {% block left_display %}
 	<h1>Category</h1>
-	<h2>Name</h2>
 	<form action="/category/add/" method="post">
+		<h2>Name</h2>
 		<input class="input_field" type="text" required name="name" placeholder="New category">
-		<div class="placeholder"></div>
+		<div class="spacer"></div>
 		<button class="submit_button" type="submit" name="button" value="submit">Add category</button>
 	</form>
 {% endblock %}

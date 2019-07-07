@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block menu %}
+	<div class="button_box">
+		<a href="/" class="link_button">Main page</a>
+	</div>
+	<div class="button_box">
+		<a href="{{ '/item/view/%i'%item['id'] }}" class="link_button">Item page</a>
+	</div>
+{% endblock %}
+{% block left_display %}
+	<h1>Item</h1>
+	<form action="{{ '/item/edit/%i/'%item['id'] }}"% method="post">
+		<h2>Category</h2>
+		<select class="input_field" name="category">
+			{% for key, value in categories.items() %}
+				<option value="{{ key }}" {% if key == item['category_id'] %} selected="selected" {% endif %}>{{ value }}</option>
+			{% endfor %}
+		</select>
+		<div class="spacer"></div>
+		<h2>Name</h2>
+		<input class="input_field" type="text" required name="name" value="{{ item['name'] }}">
+		<div class="spacer"></div>
+		<h2>Description</h2>
+		<input class="input_field" type="text" name="description" value="{{ item['description'] }}">
+		<div class="spacer"></div>
+		<button class="submit_button" type="submit" name="button" value="submit">Edit item</button>
+	</form>
+{% endblock %}

@@ -3,13 +3,16 @@
 	<div class="button_box">
 		<a href="/" class="link_button">Main page</a>
 	</div>
+	<div class="button_box">
+		<a href="{{ '/category/view/%i'%category['id'] }}" class="link_button">Category page</a>
+	</div>
 {% endblock %}
 {% block left_display %}
 	<h1>Category</h1>
-	<h2>Name</h2>
 	<form action="{{ '/category/edit/%i/'%category['id'] }}" method="post">
+		<h2>Name</h2>
 		<input class="input_field" type="text" required name="name" value="{{ category['name'] }}">
-		<div class="placeholder"></div>
+		<div class="spacer"></div>
 		<button class="submit_button" type="submit" name="button" value="submit">Edit category</button>
 	</form>
 {% endblock %}
