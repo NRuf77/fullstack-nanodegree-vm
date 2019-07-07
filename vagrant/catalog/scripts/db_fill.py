@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Fill database with sample content.
 
 Written by Nikolaus Ruf

@@ -5,12 +5,6 @@ Written by Nikolaus Ruf
 """
 
 from flask import render_template, flash
-import logging
-
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
-# log output is configured for the root logger in the startup script
 
 
 class ContentManager:
