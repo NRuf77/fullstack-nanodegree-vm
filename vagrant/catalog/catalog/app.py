@@ -4,11 +4,13 @@
 Written by Nikolaus Ruf
 """
 
-from flask import Flask, redirect, url_for, flash, request
+from flask import Flask, redirect, url_for, flash, request, session
+import os
+from urllib import quote_plus
 
 
 # TODO: implement actual authentication
-is_logged_in = True
+is_logged_in = False
 user_name = "Niko"
 
 
@@ -17,15 +19,47 @@ app = Flask(
 )  # HTML and style files are outside the Python module directory
 
 
+def get_token():
+    """Generate a random, URL-safe string as anti-CSRF token.
+
+    :return: string; URL-safe token
+    """
+    return quote_plus(os.urandom(16))
+
+
 @app.route("/")
 def serve_main_page():
     """Serve main page.
 
     :return: HTML code for page
     """
+    session["state"] = get_token()
     return app.config["content"].render_main_page(
-        is_logged_in=is_logged_in, user_name=user_name
+        client_id=app.config["google_client_id"],
+        state=session["state"],
+        is_logged_in=is_logged_in,
+        user_name=user_name
     )
+
+
+@app.route("/sign_in/", methods=["POST"])
+def handle_sign_in():
+    """Handle sign in request.
+
+    :return: sign in result
+    """
+    # TODO: authenticate and reply
+    pass
+
+
+@app.route("/sign_out/")
+def handle_sign_out():
+    """Handle sign in out request.
+
+    :return: redirect to main page
+    """
+    # TODO: reset user information
+    return redirect(url_for("serve_main_page"))
 
 
 @app.route("/category/view/<int:id_>/")
@@ -34,8 +68,13 @@ def serve_category_page(id_):
 
     :return: HTML code for page or redirect URL
     """
+    session["state"] = get_token()
     page = app.config["content"].render_category_page(
-        is_logged_in=is_logged_in, user_name=user_name, id_=id_
+        client_id=app.config["google_client_id"],
+        state=session["state"],
+        is_logged_in=is_logged_in,
+        user_name=user_name,
+        id_=id_
     )
     if page is not None:
         return page
@@ -52,9 +91,15 @@ def serve_add_category_page():
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         return app.config["content"].render_add_category_page(
+            client_id=app.config["google_client_id"],
+            state=session["state"],
             user_name=user_name
         )
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_add_category_page"))
     id_ = app.config["content"].add_category(
         request.form.get("name", type=str)
     )
@@ -74,12 +119,19 @@ def serve_edit_category_page(id_):
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         page = app.config["content"].render_edit_category_page(
-            user_name=user_name, id_=id_
+            client_id=app.config["google_client_id"],
+            state=session["state"],
+            user_name=user_name,
+            id_=id_
         )
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_edit_category_page", id_=id_))
     app.config["content"].edit_category(
         id_=id_, name=request.form.get("name", type=str)
     )
@@ -97,12 +149,19 @@ def serve_delete_category_page(id_):
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         page = app.config["content"].render_delete_category_page(
-            user_name=user_name, id_=id_
+            client_id=app.config["google_client_id"],
+            state=session["state"],
+            user_name=user_name,
+            id_=id_
         )
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_delete_category_page", id_=id_))
     app.config["content"].delete_category(id_=id_)
     return redirect(url_for("serve_main_page"))
 
@@ -114,8 +173,13 @@ def serve_item_page(id_):
     :param id_: integer; item ID
     :return: HTML code for page
     """
+    session["state"] = get_token()
     page = app.config["content"].render_item_page(
-        is_logged_in=is_logged_in, user_name=user_name, id_=id_
+        client_id=app.config["google_client_id"],
+        state=session["state"],
+        is_logged_in=is_logged_in,
+        user_name=user_name,
+        id_=id_
     )
     if page is not None:
         return page
@@ -125,7 +189,7 @@ def serve_item_page(id_):
 @app.route("/item/add/", methods=["GET", "POST"])
 @app.route("/item/add/<int:id_>/")
 # category ID as path parameter is only used with GET requests to pre-select
-# the category, a POST request must provide it as a form parameter
+# the category in the form; a POST request must provide it as a form parameter
 def serve_add_item_page(id_=-1):
     """Serve page for adding an item or handle POST request.
 
@@ -137,12 +201,19 @@ def serve_add_item_page(id_=-1):
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         page = app.config["content"].render_add_item_page(
-            user_name=user_name, id_=id_
+            client_id=app.config["google_client_id"],
+            state=session["state"],
+            user_name=user_name,
+            id_=id_
         )
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_add_item_page", id_=id_))
     id_ = app.config["content"].add_item(
         request.form.get("name", type=str),
         request.form.get("description", type=str),
@@ -164,12 +235,19 @@ def serve_edit_items_page(id_):
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         page = app.config["content"].render_edit_item_page(
-            user_name=user_name, id_=id_
+            client_id=app.config["google_client_id"],
+            state=session["state"],
+            user_name=user_name,
+            id_=id_
         )
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_edit_items_page", id_=id_))
     app.config["content"].edit_item(
         id_,
         request.form.get("name", type=str),
@@ -190,11 +268,18 @@ def serve_delete_items_page(id_):
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
     if request.method == "GET":
+        session["state"] = get_token()
         page = app.config["content"].render_delete_item_page(
-            user_name=user_name, id_=id_
+            client_id=app.config["google_client_id"],
+            state=session["state"],
+            user_name=user_name,
+            id_=id_
         )
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    if request.form.get("state", default="") != session["state"]:
+        flash("Sorry, the form data was stale. Please try again.")
+        return redirect(url_for("serve_delete_items_page", id_=id_))
     app.config["content"].delete_item(id_,)
     return redirect(url_for("serve_main_page"))

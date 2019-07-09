@@ -36,9 +36,8 @@ h2 {
 	display: flex;
 }
 
-.title {
+.title, .title_wide {
 	height: 80px;
-	width: 75%;
 	margin: 0;
 	background-color: #3e82fc;
 	text-decoration: none;
@@ -49,6 +48,14 @@ h2 {
 	line-height: 80px;
 	vertical-align: middle;
 	padding-left: 15px;
+}
+
+.title {
+	width: 75%;
+}
+
+.title_wide {
+	width: 100%;
 }
 
 .login_box {
@@ -80,7 +87,7 @@ h2 {
 	padding-right: 15px;
 }
 
-.link_button, .submit_button {
+.my_button {
 	display:inline-block;
 	height: 30px;
 	width: 170px;

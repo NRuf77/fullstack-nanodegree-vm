@@ -18,24 +18,31 @@ class ContentManager:
         """
         self._db_manager = db_manager
 
-    def render_main_page(self, is_logged_in, user_name):
+    def render_main_page(self, client_id, state, is_logged_in, user_name):
         """Render main page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param is_logged_in: boolean flag; whether the user is logged in
         :param user_name: string; user name
         :return: HTML page
         """
         return render_template(
             "main.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=is_logged_in,
             user_name=user_name,
             categories=self._db_manager.get_category_list(),
             items=self._db_manager.get_latest_items(10)
         )
 
-    def render_category_page(self, is_logged_in, user_name, id_):
+    def render_category_page(
+            self, client_id, state, is_logged_in, user_name, id_):
         """Render category page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param is_logged_in: boolean flag; whether the user is logged in
         :param user_name: string; user name
         :param id_: integer; category ID
@@ -48,6 +55,8 @@ class ContentManager:
         items = self._db_manager.get_category_items(id_)
         return render_template(
             "category_view.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=is_logged_in,
             user_name=user_name,
             category=category,
@@ -55,14 +64,18 @@ class ContentManager:
         )
 
     @staticmethod
-    def render_add_category_page(user_name):
+    def render_add_category_page(client_id, state, user_name):
         """Render add category page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :return: HTML page
         """
         return render_template(
             "category_add.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name
         )
@@ -77,9 +90,11 @@ class ContentManager:
         flash(message)
         return id_
 
-    def render_edit_category_page(self, user_name, id_):
+    def render_edit_category_page(self, client_id, state, user_name, id_):
         """Render edit category page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :param id_: integer; category ID
         :return: HTML page or None if something went wrong
@@ -90,6 +105,8 @@ class ContentManager:
             return
         return render_template(
             "category_edit.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name,
             category=category
@@ -104,9 +121,11 @@ class ContentManager:
         """
         flash(self._db_manager.edit_category(id_=id_, name=name))
 
-    def render_delete_category_page(self, user_name, id_):
+    def render_delete_category_page(self, client_id, state, user_name, id_):
         """Render delete category page.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :param id_: integer; category ID
         :return: HTML page or None if something went wrong
@@ -117,6 +136,8 @@ class ContentManager:
             return
         return render_template(
             "category_delete.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name,
             category=category
@@ -130,9 +151,11 @@ class ContentManager:
         """
         flash(self._db_manager.delete_category(id_=id_))
 
-    def render_item_page(self, is_logged_in, user_name, id_):
+    def render_item_page(self, client_id, state, is_logged_in, user_name, id_):
         """Render item page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param is_logged_in: boolean flag; whether the user is logged in
         :param user_name: string; user name
         :param id_: integer; item ID
@@ -149,15 +172,19 @@ class ContentManager:
             return
         return render_template(
             "item_view.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=is_logged_in,
             user_name=user_name,
             category=category,
             item=item
         )
 
-    def render_add_item_page(self, user_name, id_):
+    def render_add_item_page(self, client_id, state, user_name, id_):
         """Render add item page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :param id_: integer; category ID proposed for item, if invalid, the
             select box will initialize to the default value
@@ -170,6 +197,8 @@ class ContentManager:
             return
         return render_template(
             "item_add.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name,
             category_id=id_,
@@ -190,9 +219,11 @@ class ContentManager:
         flash(message)
         return id_
 
-    def render_edit_item_page(self, user_name, id_):
+    def render_edit_item_page(self, client_id, state, user_name, id_):
         """Render edit item page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :param id_: integer; item ID
         :return: HTML page or None if something went wrong
@@ -208,6 +239,8 @@ class ContentManager:
             return
         return render_template(
             "item_edit.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name,
             categories=categories,
@@ -230,9 +263,11 @@ class ContentManager:
             category_id=category_id
         ))
 
-    def render_delete_item_page(self, user_name, id_):
+    def render_delete_item_page(self, client_id, state, user_name, id_):
         """Render delete item page template.
 
+        :param client_id: string; Google client ID
+        :param state: string; anti-CSRF token
         :param user_name: string; user name
         :param id_: integer; item ID
         :return: HTML page or None if something went wrong
@@ -248,6 +283,8 @@ class ContentManager:
             return
         return render_template(
             "item_delete.html",
+            client_id=client_id,
+            state=state,
             is_logged_in=True,
             user_name=user_name,
             category=category["name"],

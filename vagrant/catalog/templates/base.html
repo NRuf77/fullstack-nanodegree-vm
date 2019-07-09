@@ -5,37 +5,51 @@
 		<title>Catalog app</title>
 		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css"/>
 		<link rel="icon" href="data:,">
+		{% if not is_logged_in %}
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+			<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+			<script>
+				function start() {
+					gapi.load('auth2', function() {
+						auth2 = gapi.auth2.init({
+							client_id: '{{ client_id }}',
+							scope: 'openid'
+						});
+					});
+				}
+			</script>
+		{% endif %}
 	</head>
 	<body>
 		<div class="centered">
-			<div class="header">
-				<div class="horizontal">
-					<a href="/" class="title">
-						CATALOG
-					</a>
-					<div class="login_box">
-						<div class="login_info">
-							{% if is_logged_in %}
-								Logged in as {{user_name}}
-							{% else %}
-								Not logged in
-							{% endif%}
-						</div>
-						<div class="login_button_box">
-							{% if is_logged_in %}
-								<a href="/logout/" class="link_button">Logout</a>
-							{% else %}
-								<a href="/login/" class="link_button">Login</a>
-							{% endif%}
+			{% block page_header %}
+				<div class="header">
+					<div class="horizontal">
+						<a href="/" class="title">CATALOG</a>
+						<div class="login_box">
+							<div class="login_info">
+								{% if is_logged_in %}
+									Logged in as {{user_name}}
+								{% else %}
+									Not logged in
+								{% endif%}
+							</div>
+							<div class="login_button_box">
+								{% if is_logged_in %}
+									<a href="/sign_out/" class="my_button">Sign out</a>
+								{% else %}
+									<button id="signinButton", class="my_button">Sign in with Google</button>
+								{% endif%}
+							</div>
 						</div>
 					</div>
+					<div class="message_bar" id="message">
+						{% for message in get_flashed_messages() %}
+							{{ message }}
+						{% endfor %}
+					</div>				
 				</div>
-				<div class="message_bar">
-					{% for message in get_flashed_messages() %}
-						{{ message }}
-					{% endfor %}
-				</div>				
-			</div>
+			{% endblock %}
 			<div class="horizontal">
 				<div class="menu">
 					<div class="spacer"></div>
@@ -51,6 +65,40 @@
 					{% endblock %}
 				</div>
 			</div>
+			{% if not is_logged_in %}
+				<script>
+					$('#signinButton').click(function() {
+						auth2.grantOfflineAccess().then(signInCallback);
+					});
+				</script>
+				<script>
+					function signInCallback(authResult) {
+						if (authResult['code']) {
+							$('#signinButton').attr('style', 'display: none');
+							$.ajax({
+								type: 'POST',
+								headers: {'X-Requested-With': 'XMLHttpRequest'},
+								url: '/gconnect$state=={{ state }}',
+								processData: false,
+								contentType: 'application/octet-stream; charset=utf-8',
+								data: authResult['code'],
+								success: function(result) {
+									if (result) {
+										$('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...');
+										setTimeout(function() {window.location.href = "/restaurant";}, 4000);
+									} else if (authResult['error']) {
+										console.log('There was an error: ' + authResult['error']);
+									} else {
+										$('#result').html('Authentication failed. Please try again.');
+									}
+								}
+							});
+						} else {
+							$('#message').html('Failed to make a server-side call. Check your configuration and console.');
+						}
+					}
+				</script>
+			{% endif %}
 		</div>
 	</body>
 </html>

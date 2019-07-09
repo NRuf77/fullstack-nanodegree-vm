@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block menu %}
 	<div class="button_box">
-		<a href="/" class="link_button">Main page</a>
+		<a href="/" class="my_button">Main page</a>
 	</div>
 {% endblock %}
 {% block left_display %}
@@ -10,6 +10,7 @@
 		<h2>Name</h2>
 		<input class="input_field" type="text" required name="name" placeholder="New category">
 		<div class="spacer"></div>
-		<button class="submit_button" type="submit" name="button" value="submit">Add category</button>
+		<button class="my_button" type="submit" name="button" value="submit">Add category</button>
+		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

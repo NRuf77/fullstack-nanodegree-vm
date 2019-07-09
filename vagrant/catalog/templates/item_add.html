@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block menu %}
 	<div class="button_box">
-		<a href="/" class="link_button">Main page</a>
+		<a href="/" class="my_button">Main page</a>
 	</div>
 	{% if category_id > -1 %}
 		<div class="button_box">
-			<a href="{{ '/category/view/%i'%category_id }}" class="link_button">Category page</a>
+			<a href="{{ '/category/view/%i'%category_id }}" class="my_button">Category page</a>
 		</div>
 	{% endif %}
 {% endblock %}
@@ -25,6 +25,7 @@
 		<h2>Description</h2>
 		<input class="input_field" type="text" name="description" placeholder="Description">
 		<div class="spacer"></div>
-		<button class="submit_button" type="submit" name="button" value="submit">Add item</button>
+		<button class="my_button" type="submit" name="button" value="submit">Add item</button>
+		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block menu %}
 	<div class="button_box">
-		<a href="/" class="link_button">Main page</a>
+		<a href="/" class="my_button">Main page</a>
 	</div>
 	<div class="button_box">
-		<a href="{{ '/category/view/%i'%category['id'] }}" class="link_button">Category page</a>
+		<a href="{{ '/category/view/%i'%category['id'] }}" class="my_button">Category page</a>
 	</div>
 {% endblock %}
 {% block left_display %}
@@ -13,7 +13,8 @@
 		<h2>Name</h2>
 		<input class="input_field" type="text" disabled name="name" value="{{ category['name'] }}">
 		<div class="spacer"></div>
-		<button class="submit_button" type="submit" name="button" value="submit">Delete category</button>
+		<button class="my_button" type="submit" name="button" value="submit">Delete category</button>
 		<p class="footnote">Deleting the category will also delete all associated items.</p>
+		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block menu %}
 	<div class="button_box">
-		<a href="/" class="link_button">Main page</a>
+		<a href="/" class="my_button">Main page</a>
 	</div>
 	<div class="button_box">
-		<a href="{{ '/category/view/%i'%item['category_id'] }}" class="link_button">Category page</a>
+		<a href="{{ '/category/view/%i'%item['category_id'] }}" class="my_button">Category page</a>
 	</div>
 	<div class="button_box">
-		<a href="{{ '/item/view/%i'%item['id'] }}" class="link_button">Item page</a>
+		<a href="{{ '/item/view/%i'%item['id'] }}" class="my_button">Item page</a>
 	</div>
 {% endblock %}
 {% block left_display %}
@@ -26,6 +26,7 @@
 		<h2>Description</h2>
 		<input class="input_field" type="text" name="description" value="{{ item['description'] }}">
 		<div class="spacer"></div>
-		<button class="submit_button" type="submit" name="button" value="submit">Edit item</button>
+		<button class="my_button" type="submit" name="button" value="submit">Edit item</button>
+		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

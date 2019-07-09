@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block menu %}
 	<div class="button_box">
-		<a href="/" class="link_button">Main page</a>
+		<a href="/" class="my_button">Main page</a>
 	</div>
 	<div class="button_box">
-		<a href="{{ '/category/view/%i'%category['id'] }}" class="link_button">Category page</a>
+		<a href="{{ '/category/view/%i'%category['id'] }}" class="my_button">Category page</a>
 	</div>
 	{% if is_logged_in %}
 		<div class="spacer"></div>
 		<div class="button_box">
-			<a href="{{ '/item/edit/%i/'%item['id'] }}" class="link_button">Edit item</a>
+			<a href="{{ '/item/edit/%i/'%item['id'] }}" class="my_button">Edit item</a>
 		</div>
 		<div class="button_box">
-			<a href="{{ '/item/delete/%i/'%item['id'] }}" class="link_button">Delete item</a>
+			<a href="{{ '/item/delete/%i/'%item['id'] }}" class="my_button">Delete item</a>
 		</div>
 	{% endif %}
 {% endblock %}

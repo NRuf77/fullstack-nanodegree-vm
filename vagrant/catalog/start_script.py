@@ -27,5 +27,9 @@ if __name__ == "__main__":
         create_engine("sqlite:///data/catalog.db")
     ))
     app.secret_key = os.urandom(16)
+    with open("data/client.info", "r") as file_:
+        info = file_.readlines()
+    app.config["google_client_id"] = info[0].rstrip()  # remove linebreaks
+    app.config["google_client_secret"] = info[1].rstrip()
     logger.info("Start catalog app")
     app.run(host='0.0.0.0', port=8080)
