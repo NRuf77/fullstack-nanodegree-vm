@@ -4,4 +4,4 @@ catalog/.idea/*
 catalog/catalog/*.pyc
 catalog/catalog/__pycache__/*
 catalog/data/*.db
-catalog/data/client.info
+catalog/data/client_secret.json

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import logging
 import os
 from sqlalchemy import create_engine
@@ -27,9 +28,9 @@ if __name__ == "__main__":
         create_engine("sqlite:///data/catalog.db")
     ))
     app.secret_key = os.urandom(16)
-    with open("data/client.info", "r") as file_:
-        info = file_.readlines()
-    app.config["google_client_id"] = info[0].rstrip()  # remove linebreaks
-    app.config["google_client_secret"] = info[1].rstrip()
+    with open("data/client_secret.json", "r") as file_:
+        info = json.load(file_)["web"]
+    app.config["google_client_id"] = info["client_id"]
+    app.config["google_client_secret"] = info["client_secret"]
     logger.info("Start catalog app")
     app.run(host='0.0.0.0', port=8080)

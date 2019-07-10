@@ -4,8 +4,12 @@
 Written by Nikolaus Ruf
 """
 
-from flask import Flask, redirect, url_for, flash, request, session
+from flask import Flask, redirect, url_for, flash, request, session, \
+    make_response
+import httplib2
+from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 import os
+import requests
 from urllib import quote_plus
 
 
