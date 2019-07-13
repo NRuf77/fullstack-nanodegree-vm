@@ -85,6 +85,9 @@ assert(category == {"id": id_3, "name": "Small things", "user_id": user_id})
 categories = db_manager.get_category_list()
 assert(categories == odict([(id_1, "Big things"), (id_3, "Small things")]))
 
+categories = db_manager.get_category_list(user_id)
+assert(categories == odict([(id_1, "Big things"), (id_3, "Small things")]))
+
 
 print("* Test editing categories")
 message = db_manager.edit_category(id_1, "Blue things")
@@ -291,6 +294,12 @@ items = db_manager.get_category_items(id_3 + 1)
 assert(items == odict())
 
 
+print("* Test foreign key delete on cascade")
+db_manager.delete_category(id_3)
+items = db_manager.get_category_items(id_3)
+assert(items == odict())
+
+
 print("* Delete test database")
 try:
     os.remove(db_file)
@@ -299,3 +308,5 @@ except OSError:
 
 
 print("* Done")
+# everything works as intended if this line is reached; exception messages
+# that are logged but do not abort the script are fine

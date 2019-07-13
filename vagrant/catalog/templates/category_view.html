@@ -3,7 +3,7 @@
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
-	{% if is_logged_in %}
+	{% if is_creator %}
 		<div class="spacer"></div>
 		<div class="button_box">
 			<a href="{{ '/category/edit/%i/'%category['id'] }}" class="my_button">Edit category</a>

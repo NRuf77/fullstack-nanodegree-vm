@@ -18,12 +18,20 @@ class ContentManager:
         """
         self._db_manager = db_manager
 
-    def render_main_page(self, client_id, state, is_logged_in, user_name):
+    def get_user_id(self, auth_id):
+        """Retrieve user ID.
+
+        :param auth_id: string; ID from OAuth2 service provider
+        :return: integer user ID or None if there was a problem
+        """
+        return self._db_manager.get_or_add_user_id(auth_id)
+
+    def render_main_page(self, client_id, state, user_id, user_name):
         """Render main page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
-        :param is_logged_in: boolean flag; whether the user is logged in
+        :param user_id: integer; active user ID
         :param user_name: string; user name
         :return: HTML page
         """
@@ -31,33 +39,34 @@ class ContentManager:
             "main.html",
             client_id=client_id,
             state=state,
-            is_logged_in=is_logged_in,
+            is_logged_in=user_id is not None,
             user_name=user_name,
             categories=self._db_manager.get_category_list(),
             items=self._db_manager.get_latest_items(10)
         )
 
     def render_category_page(
-            self, client_id, state, is_logged_in, user_name, id_):
+            self, client_id, state, user_id, user_name, category_id):
         """Render category page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
-        :param is_logged_in: boolean flag; whether the user is logged in
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :return: HTML page or None if something went wrong
         """
-        category = self._db_manager.get_category(id_)
+        category = self._db_manager.get_category(category_id)
         if category is None:
             flash("Invalid category.")
             return
-        items = self._db_manager.get_category_items(id_)
+        items = self._db_manager.get_category_items(category_id)
         return render_template(
             "category_view.html",
             client_id=client_id,
             state=state,
-            is_logged_in=is_logged_in,
+            is_logged_in=user_id is not None,
+            is_creator=category["user_id"] == user_id,
             user_name=user_name,
             category=category,
             items=items
@@ -80,28 +89,34 @@ class ContentManager:
             user_name=user_name
         )
 
-    def add_category(self, name):
+    def add_category(self, name, user_id):
         """Add a new category.
 
         :param name: string; desired category name
+        :param user_id: integer; active user ID
         :return: integer ID of new category or None to indicate a failure
         """
-        id_, message = self._db_manager.add_category(name)
+        category_id, message = self._db_manager.add_category(name, user_id)
         flash(message)
-        return id_
+        return category_id
 
-    def render_edit_category_page(self, client_id, state, user_name, id_):
+    def render_edit_category_page(
+            self, client_id, state, user_id, user_name, category_id):
         """Render edit category page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :return: HTML page or None if something went wrong
         """
-        category = self._db_manager.get_category(id_)
+        category = self._db_manager.get_category(category_id)
         if category is None:
             flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("Only the original creator can edit a category.")
             return
         return render_template(
             "category_edit.html",
@@ -112,27 +127,40 @@ class ContentManager:
             category=category
         )
 
-    def edit_category(self, id_, name):
+    def edit_category(self, category_id, name, user_id):
         """Edit an existing category.
 
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :param name: string; desired category name; must not be empty
+        :param user_id: integer; active user ID
         :return: no return value
         """
-        flash(self._db_manager.edit_category(id_=id_, name=name))
+        category = self._db_manager.get_category(category_id)
+        if category is None:
+            flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("Only the original creator can edit a category.")
+            return
+        flash(self._db_manager.edit_category(category_id, name))
 
-    def render_delete_category_page(self, client_id, state, user_name, id_):
+    def render_delete_category_page(
+            self, client_id, state, user_id, user_name, category_id):
         """Render delete category page.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :return: HTML page or None if something went wrong
         """
-        category = self._db_manager.get_category(id_)
+        category = self._db_manager.get_category(category_id)
         if category is None:
             flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("Only the original creator can delete a category.")
             return
         return render_template(
             "category_delete.html",
@@ -143,25 +171,33 @@ class ContentManager:
             category=category
         )
 
-    def delete_category(self, id_):
+    def delete_category(self, category_id, user_id):
         """Delete an existing category.
 
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
+        :param user_id: integer; active user ID
         :return: no return value
         """
-        flash(self._db_manager.delete_category(id_=id_))
+        category = self._db_manager.get_category(category_id)
+        if category is None:
+            flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("Only the original creator can delete a category.")
+            return
+        flash(self._db_manager.delete_category(category_id))
 
-    def render_item_page(self, client_id, state, is_logged_in, user_name, id_):
+    def render_item_page(self, client_id, state, user_id, user_name, item_id):
         """Render item page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
-        :param is_logged_in: boolean flag; whether the user is logged in
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :return: HTML page or None if something went wrong
         """
-        item = self._db_manager.get_item(id_)
+        item = self._db_manager.get_item(item_id)
         if item is None:
             flash("Invalid item.")
             return
@@ -174,26 +210,28 @@ class ContentManager:
             "item_view.html",
             client_id=client_id,
             state=state,
-            is_logged_in=is_logged_in,
+            is_logged_in=user_id is not None,
+            is_creator=item["user_id"] == user_id,
             user_name=user_name,
             category=category,
             item=item
         )
 
-    def render_add_item_page(self, client_id, state, user_name, id_):
+    def render_add_item_page(
+            self, client_id, state, user_id, user_name, category_id):
         """Render add item page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; category ID proposed for item, if invalid, the
-            select box will initialize to the default value
+        :param category_id: integer; category ID proposed for item, if invalid,
+            the select box will initialize to the default value
         :return: HTML page or None if something went wrong
         """
-        categories = self._db_manager.get_category_list()
+        categories = self._db_manager.get_category_list(user_id)
         if len(categories) == 0:
-            # this should not happen unless there is a concurrent delete
-            flash("Sorry, something went wrong.")
+            flash("You have created no categories to add items to.")
             return
         return render_template(
             "item_add.html",
@@ -201,41 +239,56 @@ class ContentManager:
             state=state,
             is_logged_in=True,
             user_name=user_name,
-            category_id=id_,
+            category_id=category_id,
             categories=categories
         )
 
-    def add_item(self, name, description, id_):
+    def add_item(self, name, description, category_id, user_id):
         """Add a new item.
 
         :param name: string; item name
         :param description: string; item description
-        :param id_: integer; category ID associated with item
+        :param category_id: integer; category ID associated with item
+        :param user_id: integer; active user ID
         :return: integer item ID or None to indicate failure
         """
-        id_, message = self._db_manager.add_item(
-            name=name, description=description, category_id=id_
+        category = self._db_manager.get_category(category_id)
+        if category is None:
+            flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("You can only add items to categories you created.")
+            return
+        item_id, message = self._db_manager.add_item(
+            name=name,
+            description=description,
+            category_id=category_id,
+            user_id=user_id
         )
         flash(message)
-        return id_
+        return item_id
 
-    def render_edit_item_page(self, client_id, state, user_name, id_):
+    def render_edit_item_page(
+            self, client_id, state, user_id, user_name, item_id):
         """Render edit item page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :return: HTML page or None if something went wrong
         """
-        categories = self._db_manager.get_category_list()
+        categories = self._db_manager.get_category_list(user_id)
         if len(categories) == 0:
-            # this should not happen unless there is a concurrent delete
-            flash("Sorry, something went wrong.")
+            flash("You have created no categories to add items to.")
             return
-        item = self._db_manager.get_item(id_)
+        item = self._db_manager.get_item(item_id)
         if item is None:
             flash("Invalid item.")
+            return
+        if item["user_id"] != user_id:
+            flash("Only the original creator can edit an item.")
             return
         return render_template(
             "item_edit.html",
@@ -247,38 +300,50 @@ class ContentManager:
             item=item
         )
 
-    def edit_item(self, id_, name, description, category_id):
+    def edit_item(self, item_id, name, description, category_id, user_id):
         """Edit an existing item.
 
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :param name: string; item name
         :param description: string; item description
         :param category_id: integer; category ID associated with item
+        :param user_id: integer; active user ID
         :return: no return value
         """
+        item = self._db_manager.get_item(item_id)
+        if item is None:
+            flash("Invalid item.")
+            return
+        if item["user_id"] != user_id:
+            flash("Only the original creator can edit an item.")
+            return
         flash(self._db_manager.edit_item(
-            id_=id_,
+            item_id=item_id,
             name=name,
             description=description,
             category_id=category_id
         ))
 
-    def render_delete_item_page(self, client_id, state, user_name, id_):
+    def render_delete_item_page(
+            self, client_id, state, user_id, user_name, item_id):
         """Render delete item page template.
 
         :param client_id: string; Google client ID
         :param state: string; anti-CSRF token
+        :param user_id: integer; active user ID
         :param user_name: string; user name
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :return: HTML page or None if something went wrong
         """
-        item = self._db_manager.get_item(id_)
+        item = self._db_manager.get_item(item_id)
         if item is None:
             flash("Invalid item.")
             return
+        if item["user_id"] != user_id:
+            flash("Only the original creator can delete an item.")
+            return
         category = self._db_manager.get_category(item["category_id"])
         if category is None:
-            # this should not happen unless there is a concurrent delete
             flash("Sorry, something went wrong.")
             return
         return render_template(
@@ -291,10 +356,18 @@ class ContentManager:
             item=item
         )
 
-    def delete_item(self, id_):
+    def delete_item(self, item_id, user_id):
         """Delete an existing item.
 
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
+        :param user_id: integer; active user ID
         :return: no return value
         """
-        flash(self._db_manager.delete_item(id_))
+        item = self._db_manager.get_item(item_id)
+        if item is None:
+            flash("Invalid item.")
+            return
+        if item["user_id"] != user_id:
+            flash("Only the original creator can delete an item.")
+            return
+        flash(self._db_manager.delete_item(item_id))

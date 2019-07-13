@@ -28,6 +28,9 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     auth_id = Column(String, nullable=False, unique=True)
+    # the user name is not tracked in the database since it may change for
+    # a given account; it is instead take from the credentials passed by
+    # the OAuth2 provider for the session
 
     relationship("category", backref="user", passive_deletes=True)
     # this is necessary for the ON DELETE CASCADE condition on the foreign key
@@ -78,15 +81,6 @@ class Item(Base):
     # this ON DELETE CASCADE condition works with query().filter().delete()
 
 
-def _clean(text):
-    """Strip all HTML tags from a string.
-
-    :param text: string
-    :return: string without any tags
-    """
-    return bleach.clean(text, tags=[], strip=True)
-
-
 class DBManager:
     """This class wraps all database transactions.
     """
@@ -104,7 +98,7 @@ class DBManager:
 
         Slightly modified from the sqlalchemy tutorial.
 
-        :return:
+        :return: context manager
         """
         session = sessionmaker(self._engine)()
         if self._engine.driver == 'pysqlite':
@@ -118,6 +112,15 @@ class DBManager:
             raise ex
         finally:
             session.close()
+
+    @staticmethod
+    def _clean(text):
+        """Strip all HTML tags from a string.
+
+        :param text: string
+        :return: string without any tags
+        """
+        return bleach.clean(text, tags=[], strip=True)
 
     def create_tables(self):
         """Create database tables that do not already exist.
@@ -135,7 +138,7 @@ class DBManager:
         """
         # noinspection PyBroadException
         try:
-            auth_id = _clean(auth_id)
+            auth_id = self._clean(auth_id)
             if auth_id == "":
                 return None
             with self._get_session() as session:
@@ -144,19 +147,19 @@ class DBManager:
                     User.auth_id == auth_id
                 ).first()
                 if user:
-                    id_ = user.id
+                    user_id = user.id
                 else:  # create a new user record
                     user = User(auth_id=auth_id)
                     session.add(user)
                     session.flush()
-                    id_ = user.id
+                    user_id = user.id
         except BaseException:
             message = "Failed to obtain user ID."
             logger.exception(message)
             # this logs a stacktrace but no implementation details are leaked
             # to the client
             return None
-        return id_
+        return user_id
 
     def add_category(self, name, user_id):
         """Add a new category.
@@ -164,41 +167,41 @@ class DBManager:
         :param name: string; name of the category; must not be empty
         :param user_id: integer; ID of creator
         :return: integer ID of the new category if the query was successful,
-            None if it was not; flash message string
+            None if it was not; message string
         """
         # noinspection PyBroadException
         try:
-            name = _clean(name)
+            name = self._clean(name)
             if name == "":
                 return None, "Invalid category name."
             with self._get_session() as session:
-                new_category = Category(name=name, user_id=user_id)
-                session.add(new_category)
+                category = Category(name=name, user_id=user_id)
+                session.add(category)
                 session.flush()
-                new_id = new_category.id
+                category_id = category.id
         except BaseException:
             message = "Failed to add a category."
             logger.exception(message)
             return None, message
-        return new_id, "Added new category '{}'.".format(name)
+        return category_id, "Added new category '{}'.".format(name)
 
-    def edit_category(self, id_, name):
+    def edit_category(self, category_id, name):
         """Change an existing category.
 
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :param name: string; new category name; must not be empty
-        :return: flash message string
+        :return: message string
         """
         # noinspection PyBroadException
         try:
-            name = _clean(name)
+            name = self._clean(name)
             if name == "":
                 return "Invalid category name."
             with self._get_session() as session:
                 category = session.query(Category).filter(
-                    Category.id == id_
+                    Category.id == category_id
                 ).one()
-                old_name = _clean(category.name)
+                old_name = self._clean(category.name)
                 category.name = name
                 session.add(category)
         except BaseException:
@@ -207,19 +210,19 @@ class DBManager:
             return message
         return "Changed name of category '{}' to '{}'.".format(old_name, name)
 
-    def delete_category(self, id_):
+    def delete_category(self, category_id):
         """Delete an existing category.
 
-        :param id_: integer; category ID
-        :return: flash message string
+        :param category_id: integer; category ID
+        :return: message string
         """
         # noinspection PyBroadException
         try:
             with self._get_session() as session:
                 category = session.query(Category).filter(
-                    Category.id == id_
+                    Category.id == category_id
                 )
-                name = _clean(category.one().name)
+                name = self._clean(category.one().name)
                 category.delete()
         except BaseException:
             message = "Failed to delete a category."
@@ -227,10 +230,10 @@ class DBManager:
             return message
         return "Deleted category '{}'.".format(name)
 
-    def get_category(self, id_):
+    def get_category(self, category_id):
         """Retrieve an existing category.
 
-        :param id_: integer; category ID
+        :param category_id: integer; category ID
         :return: dict with fields id, name, and user_id if the query was
             successful, None if not
         """
@@ -238,11 +241,11 @@ class DBManager:
         try:
             with self._get_session() as session:
                 category = session.query(Category).filter(
-                    Category.id == id_
+                    Category.id == category_id
                 ).one()
                 result = {
                     "id": category.id,
-                    "name": _clean(category.name),
+                    "name": self._clean(category.name),
                     "user_id": category.user_id
                 }
         except BaseException:
@@ -250,20 +253,29 @@ class DBManager:
             return
         return result
 
-    def get_category_list(self):
-        """Retrieve all categories in alphabetical order.
+    def get_category_list(self, user_id=None):
+        """Retrieve categories in alphabetical order.
 
+        :param user_id: integer or None; if not None, returns only categories
+            created by the given user
         :return: ordered dict with category IDs as keys and category names as
             values if the query was successful, an empty ordered dict if not
         """
         # noinspection PyBroadException
         try:
             with self._get_session() as session:
-                categories = session.query(Category).order_by(
-                    Category.name
-                ).all()
+                if user_id is None:
+                    categories = session.query(Category).order_by(
+                        Category.name
+                    ).all()
+                else:
+                    categories = session.query(Category).filter(
+                        Category.user_id == user_id
+                    ).order_by(
+                        Category.name
+                    ).all()
                 result = odict([
-                    (category.id, _clean(category.name))
+                    (category.id, self._clean(category.name))
                     for category in categories
                 ])
         except BaseException:
@@ -279,48 +291,48 @@ class DBManager:
         :param category_id: integer; associated category ID
         :param user_id: integer; ID of creator
         :return: integer ID of the new item if the query was successful, None
-            if not; flash message string
+            if not; message string
         """
         # noinspection PyBroadException
         try:
-            name = _clean(name)
+            name = self._clean(name)
             if name == "":
                 return None, "Invalid item name."
-            description = _clean(description)
+            description = self._clean(description)
             with self._get_session() as session:
-                new_item = Item(
+                item = Item(
                     name=name,
                     description=description,
                     category_id=category_id,
                     user_id=user_id
                 )
-                session.add(new_item)
+                session.add(item)
                 session.flush()
-                new_id = new_item.id
+                item_id = item.id
         except BaseException:
             message = "Failed to add an item."
             logger.exception(message)
             return None, message
-        return new_id, "Added new item '{}'.".format(name)
+        return item_id, "Added new item '{}'.".format(name)
 
-    def edit_item(self, id_, name, description, category_id):
+    def edit_item(self, item_id, name, description, category_id):
         """Edit an existing item.
 
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :param name: string; item name; must not be empty
         :param description: string; item description
         :param category_id: integer; associated category ID
-        :return: flash message string
+        :return: message string
         """
         # noinspection PyBroadException
         try:
-            name = _clean(name)
+            name = self._clean(name)
             if name == "":
                 return "Invalid item name."
-            description = _clean(description)
+            description = self._clean(description)
             with self._get_session() as session:
-                item = session.query(Item).filter(Item.id == id_).one()
-                old_name = _clean(item.name)
+                item = session.query(Item).filter(Item.id == item_id).one()
+                old_name = self._clean(item.name)
                 item.name = name
                 item.description = description
                 item.category_id = category_id
@@ -331,17 +343,17 @@ class DBManager:
             return message
         return "Edited item '{}' (formerly '{}').".format(name, old_name)
 
-    def delete_item(self, id_):
+    def delete_item(self, item_id):
         """Delete and existing item.
 
-        :param id_: integer; item ID
-        :return: flash message string
+        :param item_id: integer; item ID
+        :return: message string
         """
         # noinspection PyBroadException
         try:
             with self._get_session() as session:
-                item = session.query(Item).filter(Item.id == id_)
-                name = _clean(item.one().name)
+                item = session.query(Item).filter(Item.id == item_id)
+                name = self._clean(item.one().name)
                 item.delete()
         except BaseException:
             message = "Failed to delete an item."
@@ -349,21 +361,21 @@ class DBManager:
             return message
         return "Deleted item '{}'.".format(name)
 
-    def get_item(self, id_):
+    def get_item(self, item_id):
         """Retrieve an existing item.
 
-        :param id_: integer; item ID
+        :param item_id: integer; item ID
         :return: dict with fields id, name, description, created, category_id,
             and user_id if the query was successful, None if not
         """
         # noinspection PyBroadException
         try:
             with self._get_session() as session:
-                item = session.query(Item).filter(Item.id == id_).one()
+                item = session.query(Item).filter(Item.id == item_id).one()
                 result = {
                     "id": item.id,
-                    "name": _clean(item.name),
-                    "description": _clean(item.description),
+                    "name": self._clean(item.name),
+                    "description": self._clean(item.description),
                     "created": item.created,
                     "category_id": item.category_id,
                     "user_id": item.user_id
@@ -423,7 +435,7 @@ class DBManager:
                     Item.category_id == category_id
                 ).order_by(Item.name).all()
                 result = odict([
-                    (item.id, _clean(item.name)) for item in items
+                    (item.id, self._clean(item.name)) for item in items
                 ])
         except BaseException:
             logger.exception("Failed to retrieve items by category.")
