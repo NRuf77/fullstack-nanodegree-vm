@@ -39,32 +39,48 @@ db_manager = DBManager(create_engine("sqlite:///" + db_file))
 db_manager.create_tables()
 
 
+print("* Test adding users")
+user_id = db_manager.get_or_add_user_id("test_user")
+assert(user_id is not None)
+
+user_id_2 = db_manager.get_or_add_user_id("")
+assert(user_id_2 is None)
+
+user_id_3 = db_manager.get_or_add_user_id("</br>")
+assert(user_id_3 is None)
+
+user_id_4 = db_manager.get_or_add_user_id("test_user")
+assert(user_id_4 == user_id)
+
+
 print("* Test adding categories")
 categories = db_manager.get_category_list()
 assert(categories == odict())
 
-id_1, message = db_manager.add_category("Big things")
+id_1, message = db_manager.add_category("Big things", user_id)
 assert(id_1 is not None)
 assert(message == "Added new category 'Big things'.")
 
 category = db_manager.get_category(id_1)
-assert(category == {"id": id_1, "name": "Big things"})
+assert(category == {"id": id_1, "name": "Big things", "user_id": user_id})
 
-id_2, message = db_manager.add_category("Big things")
+id_2, message = db_manager.add_category("Big things", user_id)
 # this logs an exception, name already exists
 assert(id_2 is None)
 assert(message == "Failed to add a category.")
 
-id_2, message = db_manager.add_category("")
+id_2, message = db_manager.add_category("", user_id)
 assert(id_2 is None)
 assert(message == "Invalid category name.")
 
-id_3, message = db_manager.add_category("<strong>Small things</strong>")
+id_3, message = db_manager.add_category(
+    "<strong>Small things</strong>", user_id
+)
 assert(id_3 is not None)
 assert(message == "Added new category 'Small things'.")
 
 category = db_manager.get_category(id_3)
-assert(category == {"id": id_3, "name": "Small things"})
+assert(category == {"id": id_3, "name": "Small things", "user_id": user_id})
 
 categories = db_manager.get_category_list()
 assert(categories == odict([(id_1, "Big things"), (id_3, "Small things")]))
@@ -75,7 +91,7 @@ message = db_manager.edit_category(id_1, "Blue things")
 assert(message == "Changed name of category 'Big things' to 'Blue things'.")
 
 category = db_manager.get_category(id_1)
-assert(category == {"id": id_1, "name": "Blue things"})
+assert(category == {"id": id_1, "name": "Blue things", "user_id": user_id})
 
 message = db_manager.edit_category(id_1 + id_3 + 1, "Red things")
 # this logs an exception, ID does not exist
@@ -111,32 +127,37 @@ print("* Test adding items")
 items = db_manager.get_latest_items(10)
 assert(items == odict())
 
-id_4, message = db_manager.add_item("Leaf", "A leaf from a tree.", id_3)
+id_4, message = db_manager.add_item(
+    "Leaf", "A leaf from a tree.", id_3, user_id
+)
 assert(id_4 is not None)
 assert(message == "Added new item 'Leaf'.")
 
 item = db_manager.get_item(id_4)
 assert(
         sorted(list(item.keys())) ==
-        ["category_id", "created", "description", "id", "name"]
+        ["category_id", "created", "description", "id", "name", "user_id"]
 )
 assert(item["category_id"] == id_3)
 assert(type(item["created"] == datetime))
 assert(item["description"] == "A leaf from a tree.")
 assert(item["id"] == id_4)
 assert(item["name"] == "Leaf")
+assert(item["user_id"] == user_id)
 
-id_5, message = db_manager.add_item("Leaf", "A leaf from a tree.", id_3)
+id_5, message = db_manager.add_item(
+    "Leaf", "A leaf from a tree.", id_3, user_id
+)
 # this logs an exception, name already exists
 assert(id_5 is None)
 assert(message == "Failed to add an item.")
 
-id_5, message = db_manager.add_item("", "A leaf from a tree.", id_3)
+id_5, message = db_manager.add_item("", "A leaf from a tree.", id_3, user_id)
 assert(id_5 is None)
 assert(message == "Invalid item name.")
 
 id_6, message = db_manager.add_item(
-    "Caterpillar", "A hungry caterpillar.", id_3 + 1
+    "Caterpillar", "A hungry caterpillar.", id_3 + 1, user_id
 )
 # this logs an exception, category ID does not exist
 assert(id_6 is None)
@@ -144,7 +165,8 @@ assert(message == "Failed to add an item.")
 
 time.sleep(1)  # ensure timestamps for items are distinct
 id_7, message = db_manager.add_item(
-    "<strong>Caterpillar</strong>", "<h1>A hungry caterpillar.</h1>", id_3
+    "<strong>Caterpillar</strong>", "<h1>A hungry caterpillar.</h1>", id_3,
+    user_id
 )
 assert(id_7 is not None)
 assert(message == "Added new item 'Caterpillar'.")
@@ -152,13 +174,14 @@ assert(message == "Added new item 'Caterpillar'.")
 item = db_manager.get_item(id_7)
 assert(
         sorted(list(item.keys())) ==
-        ["category_id", "created", "description", "id", "name"]
+        ["category_id", "created", "description", "id", "name", "user_id"]
 )
 assert(item["category_id"] == id_3)
 assert(type(item["created"] == datetime))
 assert(item["description"] == "A hungry caterpillar.")
 assert(item["id"] == id_7)
 assert(item["name"] == "Caterpillar")
+assert(item["user_id"] == user_id)
 
 items = db_manager.get_latest_items(10)
 assert(items == odict([
@@ -184,13 +207,14 @@ assert(message == "Edited item 'Oak leaf' (formerly 'Leaf').")
 item = db_manager.get_item(id_4)
 assert(
         sorted(list(item.keys())) ==
-        ["category_id", "created", "description", "id", "name"]
+        ["category_id", "created", "description", "id", "name", "user_id"]
 )
 assert(item["category_id"] == id_3)
 assert(type(item["created"] == datetime))
 assert(item["description"] == "A leaf from an oak tree.")
 assert(item["id"] == id_4)
 assert(item["name"] == "Oak leaf")
+assert(item["user_id"] == user_id)
 
 message = db_manager.edit_item(
     id_4 + id_7 + 1, "Oak leaf", "A leaf from an oak tree.", id_3
@@ -216,13 +240,14 @@ assert(message == "Edited item 'Beech leaf' (formerly 'Oak leaf').")
 item = db_manager.get_item(id_4)
 assert(
         sorted(list(item.keys())) ==
-        ["category_id", "created", "description", "id", "name"]
+        ["category_id", "created", "description", "id", "name", "user_id"]
 )
 assert(item["category_id"] == id_3)
 assert(type(item["created"] == datetime))
 assert(item["description"] == "A leaf from a beech tree.")
 assert(item["id"] == id_4)
 assert(item["name"] == "Beech leaf")
+assert(item["user_id"] == user_id)
 
 items = db_manager.get_latest_items(10)
 assert(items == odict([
