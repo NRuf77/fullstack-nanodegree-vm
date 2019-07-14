@@ -67,9 +67,13 @@
 			</div>
 			{% if not is_logged_in %}
 				<script>
-					$('#signinButton').click(function() {
-						auth2.grantOfflineAccess().then(signInCallback);
-					});
+					$(document).ready(
+						function() {
+							$('#signinButton').click(function() {
+								auth2.grantOfflineAccess().then(signInCallback);
+							});
+						}
+					)
 				</script>
 				<script>
 					function signInCallback(authResult) {

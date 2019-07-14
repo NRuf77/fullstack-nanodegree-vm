@@ -387,7 +387,7 @@ def serve_json(num=None, id_=None):
         provide a number of items to return
     :param id_: integer or None; requests for a specific category or item need
         to provide an ID
-    :return: JSON object
+    :return: JSON response
     """
     resource = request.path.split("/")[2]
     content = app.config["content"].get_content(resource, num, id_)
