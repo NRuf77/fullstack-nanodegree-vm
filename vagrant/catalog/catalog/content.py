@@ -4,6 +4,8 @@
 Written by Nikolaus Ruf
 """
 
+# noinspection PyPep8Naming
+from collections import OrderedDict as odict
 from flask import render_template, flash
 
 
@@ -371,3 +373,52 @@ class ContentManager:
             flash("Only the original creator can delete an item.")
             return
         flash(self._db_manager.delete_item(item_id))
+
+    def get_content(self, resource, num, id_):
+        """Provide selected database content.
+
+        :param resource: string; either 'categories', 'latest_items',
+            'category', or 'item'
+        :param num: positive integer or None; resource type 'latest_items'
+            requires a number of items to return
+        :param id_: integer or None; resource types 'category' and 'item'
+            require a specific ID
+        :return: None if the requested resource does not exist, otherwise:
+            - categories: ordered dict with integer item ID as key and category
+              name as value
+            - latest_items: ordered dict with integer item ID as key and a dict
+              with keys 'name', 'category_id', and 'category_name' containing
+              the item name and category information
+            - category: ordered dict with fields id, name, and items containing
+              the integer id, category name, and an ordered dict; the latter
+              contains item IDs as keys and item names as values in
+              alphabetical order
+            - item: ordered dict with fields id, name, description category_id,
+              and category_name
+        """
+        if resource == "categories":
+            return self._db_manager.get_category_list()
+        if resource == "latest_items" and num > 0:
+            return self._db_manager.get_latest_items(num)
+        if resource == "category" and id_ is not None:
+            category = self._db_manager.get_category(id_)
+            if category is not None:
+                items = self._db_manager.get_category_items(category["id"])
+                return odict([
+                    ("id", category["id"]),
+                    ("name", category["name"]),
+                    ("items", items)
+                ])
+        if resource == "item" and id_ is not None:
+            item = self._db_manager.get_item(id_)
+            if item is not None:
+                category = self._db_manager.get_category(item["category_id"])
+                if category is not None:
+                    return odict([
+                        ("id", item["id"]),
+                        ("name", item["name"]),
+                        ("description", item["description"]),
+                        ("category_id", item["category_id"]),
+                        ("category_name", category["name"])
+                    ])
+        # if no conditions for a valid return value apply, exit with None

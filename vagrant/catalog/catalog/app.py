@@ -374,3 +374,31 @@ def serve_delete_items_page(item_id):
         return redirect(url_for("serve_delete_items_page", item_id=item_id))
     app.config["content"].delete_item(item_id, user_id)
     return redirect(url_for("serve_main_page"))
+
+
+@app.route("/json/categories/")
+@app.route("/json/latest_items/<int:num>/")
+@app.route("/json/category/<int:id_>/")
+@app.route("/json/item/<int:id_>/")
+def serve_json(num=None, id_=None):
+    """Provide selected database content as JSON object.
+
+    :param num: positive integer or None; request for latest items needs to
+        provide a number of items to return
+    :param id_: integer or None; requests for a specific category or item need
+        to provide an ID
+    :return: JSON object
+    """
+    resource = request.path.split("/")[2]
+    content = app.config["content"].get_content(resource, num, id_)
+    if content is None:
+        response = make_response(
+            json.dumps("Requested content not found."), 404
+        )
+        response.headers["Content-Type"] = "application/json"
+        return response
+    response = make_response(json.dumps(content), 200)
+    # build response by hand and do not use flask.jsonify() as the latter
+    # destroys the order in an ordered dict
+    response.headers["Content-Type"] = "application/json"
+    return response
