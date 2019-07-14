@@ -32,4 +32,4 @@ if __name__ == "__main__":
     ))
     app.config["google_client_secret_file"] = "data/client_secret.json"
     logger.info("Start catalog app")
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=5000)

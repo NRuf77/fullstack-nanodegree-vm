@@ -14,9 +14,17 @@ from datetime import datetime
 import logging
 import os
 from sqlalchemy import create_engine
+import sys
 import time
 
-from catalog.database import DBManager
+if os.getcwd() not in sys.path:
+    sys.path.append(os.getcwd())
+# this script should be run from the 'catalog' directory using
+#     $ python scripts/db_test.py
+# but Python under Ubuntu appears to not automatically look for modules in the
+# current working directory; this hack would not be necessary under Windows
+
+from catalog import DBManager
 
 
 # add a logger to display messages for exceptions suppressed by the db manager
