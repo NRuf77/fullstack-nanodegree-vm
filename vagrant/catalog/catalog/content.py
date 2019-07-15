@@ -323,6 +323,13 @@ class ContentManager:
         if item["user_id"] != user_id:
             flash("Only the original creator can edit an item.")
             return
+        category = self._db_manager.get_category(category_id)
+        if category is None:
+            flash("Invalid category.")
+            return
+        if category["user_id"] != user_id:
+            flash("You can only add items to categories you created.")
+            return
         flash(self._db_manager.edit_item(
             item_id=item_id,
             name=name,
