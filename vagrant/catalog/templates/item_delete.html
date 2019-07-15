@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block menu %}
+	<!-- The delete item page has a links back to the main page, associated category page, and item page.	-->
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
@@ -11,6 +12,10 @@
 	</div>
 {% endblock %}
 {% block left_display %}
+	<!--
+		The left display on the delete item page has a form showing the item's name, category, and description
+		(all non-editable), as well as a submit button.
+	-->
 	<h1>Item</h1>
 	<form action="{{ '/item/delete/%i/'%item['id'] }}"% method="post">
 		<h2>Category</h2>
@@ -23,6 +28,7 @@
 		<input class="input_field" type="text" disabled name="description" value="{{ item['description'] }}">
 		<div class="spacer"></div>
 		<button class="my_button" type="submit" name="button" value="submit">Delete item</button>
+		<!-- State token is passed via POST as value of a hidden input element. -->
 		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

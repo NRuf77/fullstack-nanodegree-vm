@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 """Table definitions and database manager class for catalog server.
 
+This submodule creates a logger named like itself (catalog.database) that logs
+information on database exceptions to a NullHandler. Log output can be
+redirected as desired by the application importing the submodule.
+
+The database manager catches many exceptions and provides empty containers or
+None values in return instead of failing. The exception messages are merely
+logged.
+
 Written by Nikolaus Ruf
 """
 
@@ -101,7 +109,7 @@ class DBManager:
         :return: context manager
         """
         session = sessionmaker(self._engine)()
-        if self._engine.driver == 'pysqlite':
+        if self._engine.driver == "pysqlite":
             session.execute("PRAGMA foreign_keys=ON")
             # enable foreign key support with sqlite
         try:
@@ -201,6 +209,8 @@ class DBManager:
                 category = session.query(Category).filter(
                     Category.id == category_id
                 ).one()
+                # one() fails if there is not exactly one record matching the
+                # filter
                 old_name = self._clean(category.name)
                 category.name = name
                 session.add(category)

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block menu %}
+	<!-- The edit category page has links back to the main page and category page. -->
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
@@ -8,12 +9,14 @@
 	</div>
 {% endblock %}
 {% block left_display %}
+	<!-- The edit category page has a form for entering an existing category's new name with a submit button. -->
 	<h1>Category</h1>
 	<form action="{{ '/category/edit/%i/'%category['id'] }}" method="post">
 		<h2>Name</h2>
 		<input class="input_field" type="text" required name="name" value="{{ category['name'] }}">
 		<div class="spacer"></div>
 		<button class="my_button" type="submit" name="button" value="submit">Edit category</button>
+		<!-- State token is passed via POST as value of a hidden input element. -->
 		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

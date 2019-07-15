@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 from sqlalchemy import create_engine
 
 from catalog import app, ContentManager, DBManager, get_token

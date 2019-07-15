@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block menu %}
+	<!--
+		The item page has links back to the main page and category page. If the user owns the item,
+		there are also links to edit or delete it.
+	-->
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
@@ -17,6 +21,7 @@
 	{% endif %}
 {% endblock %}
 {% block left_display %}
+	<!-- The left display on the item page shows the item's name, category, and description. -->
 	<h1>{{ item['name'] }}</h1>
 	<h2>Category</h2>
 	<p class="catalog_item">{{ category['name'] }}</p>

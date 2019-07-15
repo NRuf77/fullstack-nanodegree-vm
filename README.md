@@ -1,3 +1,253 @@
+# Catalog app project submission for Udacity course "full stack web developer"
+
+Catalog app written by Nikolaus Ruf as part of the requirements for passing the
+course.
+
+This repository was forked from the Udacity repository containing the virtual
+machine configuration for the "full stack web developer" course.
+The original README.md content can be found below for reference.
+
+The application code submitted for the second project "catalog app" has been
+added in subdirectory 'vagrant/catalog'.
+
+## Starting the catalog app
+
+To run the catalog app, follow these steps:
+
+ 1. Download and install Vagrant from
+    [www.vagrantup.com](https://www.vagrantup.com/downloads.html).
+    
+ 2. Download and install VirtualBox from
+    [www.virtualbox.org](https://www.virtualbox.org/wiki/Downloads).
+    
+ 3. On Windows, make sure that virtualization is enabled in BIOS.
+ 
+ 4. Start a Linux shell to run vagrant. On Windows, you can use the Git Bash
+    shell that comes with [Git for Windows](https://git-scm.com/downloads).
+    
+ 5. In the shell, switch to the *vagrant* subdirectory from the VM configuration
+    and run the command
+    ```
+    $ vagrant up
+    ```
+    This can take a while to complete the first time you run it since a lot of
+    data will be downloaded from the internet.
+    
+ 6. To log into the VM, use
+    ```
+    $ vagrant ssh
+    ```
+    
+ 7. Install additional Python packages
+    ```
+    $ sudo pip install sqlalchemy
+    $ sudo pip install requests
+    $ sudo pip install bleach
+    ```
+    
+ 8. Switch to the app directory
+    ```
+    $ cd /vagrant/catalog
+    ```
+    
+ 9. Create an empty database in /vagrant/catalog/data via
+    ```
+    $ python scripts/db_setup.py
+    ```
+    
+10. *Optional:* to pre-fill the catalog with a few (silly) categories and
+    items, run
+    ```
+    $ python scripts/db_fill.py
+    ```
+    The app also works if the database is empty.
+    
+11. Obtain a client secret file from the Google developer portal (instructions
+    below), rename it to client_secret.json and put it into
+    /vagrant/catalog/data.
+    
+12. From /vagrant/catalog, start the app via
+    ```
+    $ python start_script.py
+    ```
+    The app writes some log messages to the console and a file catalog.log.
+    Apart from the Flask app status, the log contains information on failed
+    database requests and the progress of the sign in procedure.
+    
+13. Open a web browser on your own machine and go to http://localhost:5000
+
+## Google OAuth2 client secret
+
+To use Google's OAuth2 service for authentication, the app needs a JSON file
+with client information from Google:
+
+ 1. Go to 
+
+## App functions and layout
+
+The app serves both HTML pages and JSON objects.
+
+All HTML pages have a sign in/sign out button in the upper right corner.
+Clicking on sign in opens a pop-up for the Google OAuth2 sign in service.
+If sign in is successful, the current page is reloaded and may now offer add,
+edit, or delete functions to the user as appropriate.
+Sign-out redirects to the main page and revokes any ability to add, edit, or
+delete content.
+
+The following HTML pages are available by path:
+
+* **/:** main page showing the list of categories on the left and the 10 most
+  recently added items on the right. If the user is signed in, there are also
+  buttons to add an item or category in the menu on the left. Clicking on a
+  category or item name links to the description of that object.
+  
+* **/category/view/[ID]:** for a valid integer ID, displays the category
+  information with associated items. There is a button to go back to the main
+  page in the menu on the left. If the user is signed in and is also the
+  creator of the category, the menu shows buttons to edit or delete the
+  category and to add an item. Clicking on an item links to its description.
+  
+* **/category/add:** the user needs to be signed in to see this page. There is
+  a form to enter the category name with a submit button. The menu on the left
+  also has buttons for going back to the main page or the category page.
+  
+* **/category/edit/[ID]:** for a valid integer ID, displays the category edit
+  page. The user needs to be signed in and be the creator of the category to
+  edit it. The layout is the same as for /category/add except that the name is
+  pre-filled.
+  
+* **/category/delete/[ID]:** as /category/edit except that the name in the form
+  is non-editable and submitting the form deletes the category.
+  
+* **/item/view/[ID]:** for a valid integer ID, displays the item information
+  (name, category, description). There are buttons to go to the main page or
+  the category page in the menu on the left. If the user is signed in and is
+  also the creator of the item, the menu shows buttons to edit or delete the
+  item.
+  
+* **/item/add/ or /item/add/[ID]:** the user needs to be signed in and have
+  created at least one category to see this page. If the ID for a category
+  belonging to the user is provided, the corresponding category is pre-selected
+  in the drop-down menu for categories. Otherwise, the first category is
+  selected. The page contains a form to select a category and enter a name and
+  description for a new item. The menu on the left contains buttons linking
+  back to the main page, category page, and item page.
+  
+* **/item/edit/[ID]:** for a valid integer item ID, displays the item edit page.
+  The user needs to be signed in and be the creator of the item to edit it. The
+  layout is the same as for /item/add except that all form elements are
+  pre-filled.
+  
+* **/item/delete/[ID]:** as /item/edit except that the form elements are
+  non-editable and submitting the form deletes the item.
+
+Attempting to access a page for a non-existing ID or with insufficient
+authorization returns the user to the main page and displays an appropriate
+flash message.
+
+These endpoints do not serve a HTML page but JSON objects:
+
+* **/json/categories:** returns a JSON object using as keys the integer
+  IDs and as values the names of all categories
+  
+* **/json/latest_items/[NUM]:** returns a JSON object using as keys the integer
+  IDs of the latest NUM items and as values JSON objects with item information
+  (name, category ID, category name)
+  
+* **/json/category/[ID]:** returns a JSON object with information for the
+  category with the given ID (ID, name, and a list of items; the latter is a 
+  SON object using as keys the integer item IDs and as values the item names)
+  
+* **/json/item/[ID]:** returns a JSON object with information for the item with
+  the given ID (ID, name, description, category ID, category name)
+
+Trying to obtain data for a non-existent ID yields a 404 NOT FOUND response.
+
+## Project structure
+
+The source code and application data are distributed among the following
+subdirectories:
+
+* **catalog:** the Python source code; see below
+
+* **data:** the database and client secrets file which need to be created
+  during setup; the git repository only contains a dummy file that enables
+  committing the directory
+  
+* **scripts:** Python scripts for creating, filling, and testing the database
+
+* **static:** CSS style file for HTML pages
+
+* **templates:** Jinja2 templates for HTML pages, see below
+
+### Python source code
+
+The catalog subdirectory contains an __init__.py file so Python treats it as a
+module.
+
+The catalog app functionality is split into three parts:
+
+* **app.py:** the Flask app handles authentication and control flow for
+  requests; it uses a content manager defined in content.py to obtain content
+  
+* **content.py:** the content manager is responsible for retrieving data from
+  the database manager and filling in templates
+  
+* **database.py:** the database manager wraps a sqlite3 database via sqlalchemy
+  and provides access functions that serve content in the format required by
+  the content manager
+
+The start script for the app is start_script.py in the main directory.
+All configuration information (paths, ports, etc.) is managed in that script.
+
+### HTML templates
+
+The templates subdirectory contains Jinja2 templates for HTML pages.
+All pages extend base.html which contains the header information, basic page
+layout, and Javascript components for accessing the Google OAuth2 service.
+The other files are named like the page they belong to, e.g., main.html,
+category_view.html, etc.
+
+### Data model
+
+The catalog app uses a sqlite3 database to store user, category, and item
+information. Only the database manager defined in database.py accesses the
+database directly.
+
+The following tables are defined using sqlalchemy ORM functionality:
+
+1. **table users:** tracks registered users
+   * **column id (integer):** internal user ID, primary key
+   * **column aut_id (string):** Google ID provided by OAuth2 service, must be
+   unique
+   
+   The Google user name is not stored since it may change for a given user ID. 
+   It is instead taken from the user data provided by Google when signing in.
+
+2. **table categories:** tracks catalog categories
+   * **column id (integer):** internal category ID, primary key
+   * **name (string):** category name, must be unique
+   * **user_id (integer):** user ID of creator / owner, foreign key referencing
+     table users
+     
+   Only the original owner can edit a category, delete a category, or add items
+   to it.
+
+3. **table items:** tracks catalog items
+   * **id (integer):** internal item ID, primary key
+   * **name (string):** item name, must be unique
+   * **description (string):** item description
+   * **created (datetime):** item creation (not edit) date
+   * **category_id:** ID of category item belongs to, foreign key referencing
+     table categories
+   * **user_id:** user ID of creator / owner, foreign key referencing table
+     users
+   
+   Only the original owner can edit or delete an item.
+
+---
+(original README.md)
+
 # Full Stack Web Developer Nanodegree program virtual machine
 
 <a href="https://www.udacity.com/">

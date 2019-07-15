@@ -6,6 +6,7 @@
 		<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css"/>
 		<link rel="icon" href="data:,">
 		{% if not is_logged_in %}
+			<!-- The following three scripts are taken straight from the Google documentation for the OAuth2 service. -->
 			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 			<script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
 			<script>
@@ -24,6 +25,7 @@
 		<div class="centered">
 			{% block page_header %}
 				<div class="header">
+					<!-- The page header contains the app name and sign in / sign out button. -->
 					<div class="horizontal">
 						<a href="/" class="title">CATALOG</a>
 						<div class="login_box">
@@ -44,6 +46,7 @@
 						</div>
 					</div>
 					<div class="message_bar" id="message">
+						<!-- Reserve space for flash messages and output from the sign in script. -->
 						{% for message in get_flashed_messages() %}
 							{{ message }}
 						{% endfor %}
@@ -51,6 +54,7 @@
 				</div>
 			{% endblock %}
 			<div class="horizontal">
+				<!-- The page content consists of a menu bar and two display areas arranged horizontally. -->
 				<div class="menu">
 					<div class="spacer"></div>
 					{% block menu %}
@@ -66,7 +70,9 @@
 				</div>
 			</div>
 			{% if not is_logged_in %}
+				<!-- These two scripts are mostly based on the Google docs and sample code from the Udacity course. -->
 				<script>
+					<!-- $(document).ready() ensures that the Javascript component for the Google API has been loaded and we get a functioning sign in button. -->
 					$(document).ready(
 						function() {
 							$('#signinButton').click(function() {

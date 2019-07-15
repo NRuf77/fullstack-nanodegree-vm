@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 {% block menu %}
+	<!-- The add category page has a link back to the main page. -->
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
 {% endblock %}
 {% block left_display %}
+	<!-- The add category page has a form for entering a new category's name with a submit button. -->
 	<h1>Category</h1>
 	<form action="/category/add/" method="post">
 		<h2>Name</h2>
 		<input class="input_field" type="text" required name="name" placeholder="New category">
 		<div class="spacer"></div>
 		<button class="my_button" type="submit" name="button" value="submit">Add category</button>
+		<!-- State token is passed via POST as value of a hidden input element. -->
 		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

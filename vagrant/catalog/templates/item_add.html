@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block menu %}
+	<!--
+		The add item page has a link back to the main page. If it was called from a category page,
+		it also links back to that.
+	-->
 	<div class="button_box">
 		<a href="/" class="my_button">Main page</a>
 	</div>
@@ -10,6 +14,10 @@
 	{% endif %}
 {% endblock %}
 {% block left_display %}
+	<!--
+		The left display on the add item page has a form for entering and submitting the new item's name,
+		category, and description.
+	-->
 	<h1>Item</h1>
 	<form action="/item/add/" method="post">
 		<h2>Category</h2>
@@ -17,6 +25,7 @@
 			{% for key, value in categories.items() %}
 				<option value="{{ key }}" {% if key == category_id%} selected="selected" {% endif %}>{{ value }}</option>
 			{% endfor %}
+			<!-- If the page was called from a category's page, that category is pre-selected. -->
 		</select>
 		<div class="spacer"></div>
 		<h2>Name</h2>
@@ -26,6 +35,7 @@
 		<input class="input_field" type="text" name="description" placeholder="Description">
 		<div class="spacer"></div>
 		<button class="my_button" type="submit" name="button" value="submit">Add item</button>
+		<!-- State token is passed via POST as value of a hidden input element. -->
 		<input type="hidden" name="state" value="{{ state }}">
 	</form>
 {% endblock %}

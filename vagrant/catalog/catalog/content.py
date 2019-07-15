@@ -83,6 +83,8 @@ class ContentManager:
         :param user_name: string; user name
         :return: HTML page
         """
+        # the check whether the user is signed in and may thus add an item is
+        # already performed by the app
         return render_template(
             "category_add.html",
             client_id=client_id,
@@ -118,6 +120,8 @@ class ContentManager:
             flash("Invalid category.")
             return
         if category["user_id"] != user_id:
+            # the check whether the user owns the category can only be made
+            # here since the database needs to be consulted
             flash("Only the original creator can edit a category.")
             return
         return render_template(

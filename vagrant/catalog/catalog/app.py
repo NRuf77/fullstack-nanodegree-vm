@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Flask app for catalog server.
 
+This submodule creates a logger named like itself (catalog.app) that logs
+information on the progress of the sign in procedure to a NullHandler.
+Log output can be redirected as desired by the application importing the
+submodule.
+
 Written by Nikolaus Ruf
 """
 
@@ -31,8 +36,8 @@ def get_token():
 def get_client_id(file_name):
     """Retrieve the client ID from the client secret file.
 
-    The ID is inserted into each web page template as argument to
-    gapi.auth2.init().
+    The ID is inserted into each web page template as part of the Google OAuth2
+    sign in configuration.
 
     :param file_name: string; file name with full or relative path
     :return: string; client ID
@@ -49,6 +54,9 @@ def serve_main_page():
     :return: HTML code for page
     """
     session["state"] = get_token()
+    # each page has a sign-in button, so each page gets a state token to
+    # protect against CSRF; on pages with HTML forms, the same state token is
+    # used to protect the form submission
     return app.config["content"].render_main_page(
         client_id=get_client_id(app.config["google_client_secret_file"]),
         state=session["state"],
@@ -60,6 +68,8 @@ def serve_main_page():
 @app.route("/sign_in", methods=["POST"])
 def handle_sign_in():
     """Handle sign in request.
+
+    This function logs every step since helps with debugging the workflow.
 
     :return: sign in response
     """
@@ -102,12 +112,16 @@ def handle_sign_in():
     )
     if response.status_code != 200:
         logger.info("Failed to revoke token.")
+        # this does not affect sign in since we know the user
 
     logger.info("Check user ID against database.")
     auth_id = credentials.id_token["sub"]
     user_name = credentials.id_token["name"]
     user_id = app.config["content"].get_user_id(auth_id)
     if user_id is None:
+        # the content manager creates a new record for a non-existent user as
+        # long as the user ID is not the empty string after running it through
+        # bleach.clean() - so this should really not happen
         logger.warn("Invalid user ID, abort sign in.")
         response = make_response(
             json.dumps("Invalid user ID."), 401
@@ -131,6 +145,8 @@ def handle_sign_out():
     """
     session.pop("user_id", None)
     session.pop("user_name", None)
+    # revoking the OAuth2 token already happened during sign in since the app
+    # does not need the token for anything else
     return redirect(url_for("serve_main_page"))
 
 
@@ -150,6 +166,9 @@ def serve_category_page(category_id):
     )
     if page is not None:
         return page
+    # page can be None of the ID is invalid or something is wrong with the
+    # database; the content manager generates an appropriate flash message in
+    # this case
     return redirect(url_for("serve_main_page"))
 
 
@@ -160,6 +179,7 @@ def serve_add_category_page():
     :return: HTML code for page or redirect URL
     """
     user_id = session.get("user_id", None)
+    # both GET and POST require sign in so we check it first
     if user_id is None:
         flash("You need to be logged in to edit content.")
         return redirect(url_for("serve_main_page"))
@@ -170,7 +190,10 @@ def serve_add_category_page():
             state=session["state"],
             user_name=session.get("user_name", None)
         )
+    # POST
     if request.form.get("state", default="") != session["state"]:
+        # this can happen if somebody uses the 'back' button of the browser
+        # since the state token is generated for every page
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(url_for("serve_add_category_page"))
     category_id = app.config["content"].add_category(
@@ -204,6 +227,7 @@ def serve_edit_category_page(category_id):
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    # POST
     if request.form.get("state", default="") != session["state"]:
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(url_for("serve_edit_category_page", id_=category_id))
@@ -238,6 +262,7 @@ def serve_delete_category_page(category_id):
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    # POST
     if request.form.get("state", default="") != session["state"]:
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(
@@ -294,6 +319,7 @@ def serve_add_item_page(category_id=-1):
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    # POST
     if request.form.get("state", default="") != session["state"]:
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(
@@ -333,6 +359,7 @@ def serve_edit_items_page(item_id):
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    # POST
     if request.form.get("state", default="") != session["state"]:
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(url_for("serve_edit_items_page", item_id=item_id))
@@ -369,6 +396,7 @@ def serve_delete_items_page(item_id):
         if page is not None:
             return page
         return redirect(url_for("serve_main_page"))
+    # POST
     if request.form.get("state", default="") != session["state"]:
         flash("Sorry, the form data was stale. Please try again.")
         return redirect(url_for("serve_delete_items_page", item_id=item_id))

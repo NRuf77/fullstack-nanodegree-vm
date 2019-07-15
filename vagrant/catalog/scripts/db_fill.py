@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Fill database with sample content.
 
+This script needs to be called from the main project directory as
+scripts/db_fill.py since relative paths are defined from there.
+
 Written by Nikolaus Ruf
 """
 
@@ -10,11 +13,8 @@ from sqlalchemy import create_engine
 import sys
 import time
 
-if os.getcwd() not in sys.path:
-    sys.path.append(os.getcwd())
-# this script should be run from the 'catalog' directory using
-#     $ python scripts/db_fill.py
-# but Python under Ubuntu appears to not automatically look for modules in the
+sys.path.append(os.getcwd())
+# Python under Ubuntu appears to not automatically look for modules in the
 # current working directory; this hack would not be necessary under Windows
 
 from catalog import DBManager
