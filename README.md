@@ -76,7 +76,7 @@ To run the catalog app, follow these steps:
     
 13. Open a web browser on your own machine and go to http://localhost:5000
 
-## Google OAuth2 client secret
+### Google OAuth2 client secret
 
 To use Google's OAuth2 service for authentication, the app needs a JSON file
 with client information from Google:
