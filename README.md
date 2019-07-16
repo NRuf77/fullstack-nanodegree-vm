@@ -81,7 +81,37 @@ To run the catalog app, follow these steps:
 To use Google's OAuth2 service for authentication, the app needs a JSON file
 with client information from Google:
 
- 1. Go to 
+ 1. Go to the [Google developer page](https://console.developers.google.com/)
+    and sign up for a new / sign in with an existing Google account.
+    
+ 2. Create a new application using the menu at the top.
+ 
+ 3. Choose 'Create credentials' as suggested by Google and select OAuth client
+    ID.
+    
+ 4. Google will ask you to configure the consent screen first, where you must
+    provide at least an application name. Click save to proceed.
+    
+ 5. Now choose "Web application" for the type of credentials.
+ 
+ 6. Give the client a name, enter
+ 
+    > http://localhost:5000
+    
+    as authorized Javascript origin, and enter
+    
+    > http://localhost
+    
+    as authorized redirect URI. While the
+    [Google docs](https://developers.google.com/identity/sign-in/web/server-side-flow)
+    claim that no redirect URI is required for the kind of authentication used
+    by the app, the function
+    oauth2client.client.credentials_from_clientsecrets_and_code() will raise an
+    exception if no URI is configured.
+ 
+ 7. Click on create and return to the main page. Then select the newly created
+    credentials again and download a JSON file with client secret and other
+    information using the menu at the top. 
 
 ## App functions and layout
 
